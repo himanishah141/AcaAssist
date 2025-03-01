@@ -4,7 +4,6 @@ import 'main.dart'; // Import main.dart to navigate to HomeScreen
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-
   @override
   SplashScreenState createState() => SplashScreenState();
 }
