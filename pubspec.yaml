@@ -13,7 +13,6 @@ dependencies:
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.3
-  flutter_native_splash: ^2.3.10
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
@@ -22,7 +21,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/Icon.png
-    - assets/Logo.png
 
 flutter_icons:
   image_path: "assets/Icon.png"
@@ -30,17 +28,3 @@ flutter_icons:
   adaptive_icon_foreground: "assets/Icon.png"
   ios: true
   android: true
-
-flutter_native_splash:
-  color: "#5C6B7D"
-  image: "assets/Logo.png"
-  fullscreen: true
-  android: true
-  ios: true
-  android_gravity: center
-  ios_content_mode: scaleAspectFit
-  android_12:
-    image: "assets/Logo.png"
-    fullscreen: true
-    icon_background_color: "#5C6B7D"
-    android_gravity: center
