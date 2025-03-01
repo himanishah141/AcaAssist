@@ -13,7 +13,7 @@ class SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Delay for 3 seconds and navigate to HomeScreen
-    Timer(Duration(seconds: 3), () {
+    Timer(Duration(seconds: 6), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -26,7 +26,7 @@ class SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Color(0xFF5C6B7D), // Set background color
       body: Center(
-        child: Image.asset("assets/logo.png", width: 200), // Replace with your logo
+        child: Image.asset("assets/logo.png", fit: BoxFit.contain), // Replace with your logo
       ),
     );
   }
