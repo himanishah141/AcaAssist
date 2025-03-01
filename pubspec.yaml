@@ -24,7 +24,6 @@ flutter:
     - assets/Icon.png
     - assets/Logo.png
 
-
 flutter_icons:
   image_path: "assets/Icon.png"
   adaptive_icon_background: "#5C6B7D"
