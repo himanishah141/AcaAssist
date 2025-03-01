@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -10,8 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const HomeScreen(), // Directly go to HomeScreen
+      home: HomeScreen(),
     );
   }
 }
@@ -22,9 +21,14 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
-      backgroundColor: const Color(0xFF5C6B7D),
-      body: const Center(child: Text("Welcome to Home Screen!")),
+      appBar: AppBar(title: Text("Home Screen")),
+      backgroundColor: Color(0xFF5C6B7D),
+      body: Center(
+        child: Text(
+          "Welcome to the Home Screen!",
+          style: TextStyle(fontSize: 20, color: Colors.white),
+        ),
+      ),
     );
   }
 }
