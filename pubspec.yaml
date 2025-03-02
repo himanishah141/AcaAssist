@@ -22,6 +22,7 @@ flutter:
   assets:
     - assets/Icon.png
     - assets/logo.png
+    - assets/google-logo.png
 
 flutter_icons:
   image_path: "assets/Icon.png"
