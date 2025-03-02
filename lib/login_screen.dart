@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  LoginScreen({super.key});
 
   // Define colors as constants
   static const Color backgroundColor = Color(0xFF5C6B7D);
   static const Color primaryColor = Color(0xFF8196B0);
   static const Color textColor = Color(0xFFD6E4F0);
+
+  final _formKey = GlobalKey<FormState>(); // Form key for validation
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -15,72 +19,71 @@ class LoginScreen extends StatelessWidget {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: backgroundColor, // Background color
-      resizeToAvoidBottomInset: true, // Adjusts the body when the keyboard appears
-      body: SingleChildScrollView( // Wrap the body in a SingleChildScrollView
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05), // 5% of screen width
-        child: Column(
-          children: [
-            // Logo - Covers the upper part responsively
-            Container(
-              width: double.infinity,
-              height: screenHeight * 0.3, // Adjust height as needed
-              decoration: const BoxDecoration(
-                image: DecorationImage(image: AssetImage("assets/logo.png"), fit: BoxFit.cover),
-              ),
-            ),
-
-            // Title directly below the logo (No extra padding)
-            Center(
-              child: Text(
-                "Login to your account",
-                style: TextStyle(
-                  fontSize: screenWidth * 0.06, // Scales with screen width
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+      backgroundColor: backgroundColor,
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // Logo
+              Container(
+                width: double.infinity,
+                height: screenHeight * 0.3,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(image: AssetImage("assets/logo.png"), fit: BoxFit.cover),
                 ),
               ),
-            ),
+              Center(
+                child: Text(
+                  "Login to your account",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.06,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.02),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Email Input
+                  _buildInputLabel("Email", screenWidth),
+                  SizedBox(height: 5),
+                  _inputField("Enter your email", _emailController),
 
-            // Login Form
-            SizedBox(height: screenHeight * 0.02), // Space before the form
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Email Input
-                _buildInputLabel("Email", screenWidth),
-                SizedBox(height: 5),
-                _inputField("Enter your email"),
+                  SizedBox(height: screenHeight * 0.015),
 
-                SizedBox(height: screenHeight * 0.015),
+                  // Password Input
+                  _buildInputLabel("Password", screenWidth),
+                  SizedBox(height: 5),
+                  _passwordInputField("Enter your password", _passwordController),
 
-                // Password Input
-                _buildInputLabel("Password", screenWidth),
-                SizedBox(height: 5),
-                _inputField("Enter your password", obscureText: true),
+                  SizedBox(height: screenHeight * 0.02),
 
-                SizedBox(height: screenHeight * 0.02),
+                  // Login Button
+                  _buildLoginButton(context, screenHeight, screenWidth),
 
-                // Login Button
-                _buildLoginButton(screenHeight, screenWidth),
+                  SizedBox(height: screenHeight * 0.015),
 
-                SizedBox(height: screenHeight * 0.015),
+                  // OR Divider
+                  _buildOrDivider(screenWidth),
 
-                // OR Divider
-                _buildOrDivider(screenWidth),
+                  SizedBox(height: screenHeight * 0.015),
 
-                SizedBox(height: screenHeight * 0.015),
+                  // Google Login Button
+                  _buildGoogleLoginButton(screenHeight, screenWidth),
 
-                // Google Login Button
-                _buildGoogleLoginButton(screenHeight, screenWidth),
+                  SizedBox(height: screenHeight * 0.03),
 
-                SizedBox(height: screenHeight * 0.03),
-
-                // Signup Option
-                _buildSignupOption(screenWidth),
-              ],
-            ),
-          ],
+                  // Signup Option
+                  _buildSignupOption(screenWidth),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -93,10 +96,10 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _inputField(String hintText, {bool obscureText = false}) {
+  Widget _inputField(String hintText, TextEditingController controller) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        double inputHeight = constraints.maxWidth * 0.12; // Dynamic height
+        double inputHeight = constraints.maxWidth * 0.12;
 
         return Container(
           height: inputHeight,
@@ -106,8 +109,8 @@ class LoginScreen extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: TextField(
-              obscureText: obscureText,
+            child: TextFormField(
+              controller: controller,
               style: TextStyle(color: textColor),
               decoration: InputDecoration(
                 border: InputBorder.none,
@@ -121,13 +124,50 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginButton(double screenHeight, double screenWidth) {
+  Widget _passwordInputField(String hintText, TextEditingController controller) {
+    return _PasswordField(hintText: hintText, controller: controller);
+  }
+
+  Widget _buildLoginButton(BuildContext context, double screenHeight, double screenWidth) {
     return SizedBox(
       width: double.infinity,
-      height: screenHeight * 0.065, // 6.5% of screen height
+      height: screenHeight * 0.065,
       child: ElevatedButton(
         onPressed: () {
-          // Handle login logic
+          // Validate email
+          if (_emailController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please enter your email.'),
+                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
+              ),
+            );
+            return;
+          }
+
+          if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(_emailController.text)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please enter a valid email.'),
+                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
+              ),
+            );
+            return;
+          }
+
+          // Validate password (only check if it's not empty)
+          if (_passwordController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please enter your password.'),
+                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
+              ),
+            );
+            return;
+          }
+
+          // Handle login logic here
+          // For example, you can call your authentication service
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
@@ -138,7 +178,7 @@ class LoginScreen extends StatelessWidget {
         child: Text(
           "Login",
           style: TextStyle(
-            fontSize: screenWidth * 0.05, // Adjusts with screen size
+            fontSize: screenWidth * 0.05,
             fontWeight: FontWeight.bold,
             color: textColor,
           ),
@@ -210,6 +250,63 @@ class LoginScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PasswordField extends StatefulWidget {
+  final String hintText;
+  final TextEditingController controller;
+
+  const _PasswordField({required this.hintText, required this.controller});
+
+  @override
+  __PasswordFieldState createState() => __PasswordFieldState();
+}
+
+class __PasswordFieldState extends State<_PasswordField> {
+  bool _isHidden = true; // State variable to track password visibility
+
+  void _togglePasswordView() {
+    setState(() {
+      _isHidden = !_isHidden; // Toggle the visibility state
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double inputHeight = constraints.maxWidth * 0.12; // Dynamic height
+
+        return Container(
+          height: inputHeight,
+          decoration: BoxDecoration(
+            color: LoginScreen.primaryColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: TextFormField(
+              controller: widget.controller,
+              obscureText: _isHidden, // Control visibility with the state variable
+              style: TextStyle(color: LoginScreen.textColor),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: widget.hintText,
+                hintStyle: TextStyle(color: LoginScreen.textColor),
+                suffixIcon: InkWell(
+                  onTap: _togglePasswordView, // Toggle visibility on tap
+                  child: Icon(
+                    _isHidden ? Icons.visibility : Icons.visibility_off, // Change icon based on state
+                    color: LoginScreen.textColor, // Set the icon color
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
