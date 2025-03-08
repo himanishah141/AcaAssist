@@ -1,9 +1,9 @@
-import 'package:aca_assist/registration_screen.dart';
+import 'package:aca_assist/login_screen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+class RegistrationScreen extends StatelessWidget {
+  RegistrationScreen({super.key});
 
   // Define colors as constants
   static const Color backgroundColor = Color(0xFF5C6B7D);
@@ -11,8 +11,11 @@ class LoginScreen extends StatelessWidget {
   static const Color textColor = Color(0xFFD6E4F0);
 
   final _formKey = GlobalKey<FormState>(); // Form key for validation
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,11 @@ class LoginScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        title: Text("Register",style: TextStyle(color: textColor)),
+        backgroundColor: backgroundColor,
+        iconTheme: IconThemeData(color: textColor),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
         child: Form(
@@ -39,7 +46,7 @@ class LoginScreen extends StatelessWidget {
               ),
               Center(
                 child: Text(
-                  "Login to your account",
+                  "Create your account",
                   style: TextStyle(
                     fontSize: screenWidth * 0.06,
                     fontWeight: FontWeight.bold,
@@ -51,6 +58,20 @@ class LoginScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // First Name Input
+                  _buildInputLabel("First Name", screenWidth),
+                  SizedBox(height: 5),
+                  _inputField("Enter your first name", _firstNameController),
+
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // Last Name Input
+                  _buildInputLabel("Last Name", screenWidth),
+                  SizedBox(height: 5),
+                  _inputField("Enter your last name", _lastNameController),
+
+                  SizedBox(height: screenHeight * 0.015),
+
                   // Email Input
                   _buildInputLabel("Email", screenWidth),
                   SizedBox(height: 5),
@@ -63,27 +84,25 @@ class LoginScreen extends StatelessWidget {
                   SizedBox(height: 5),
                   _passwordInputField("Enter your password", _passwordController),
 
+                  SizedBox(height: screenHeight * 0.015),
+
+                  // Confirm Password Input
+                  _buildInputLabel("Confirm Password", screenWidth),
+                  SizedBox(height: 5),
+                  _passwordInputField("Confirm your password", _confirmPasswordController),
+
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Login Button
-                  _buildLoginButton(context, screenHeight, screenWidth),
-
-                  SizedBox(height: screenHeight * 0.015),
-
-                  // OR Divider
-                  _buildOrDivider(screenWidth),
-
-                  SizedBox(height: screenHeight * 0.015),
-
-                  // Google Login Button
-                  _buildGoogleLoginButton(screenHeight, screenWidth),
+                  // Sign Up Button
+                  _buildSignUpButton(context, screenHeight, screenWidth),
 
                   SizedBox(height: screenHeight * 0.03),
 
-                  // Signup Option
-                  _buildSignupOption(context, screenWidth),
+                  // Already have an account text
+                  _buildLoginOption(context,screenWidth),
                 ],
               ),
+              SizedBox(height: screenHeight * 0.05), // Add bottom padding
             ],
           ),
         ),
@@ -130,46 +149,99 @@ class LoginScreen extends StatelessWidget {
     return _PasswordField(hintText: hintText, controller: controller);
   }
 
-  Widget _buildLoginButton(BuildContext context, double screenHeight, double screenWidth) {
+  Widget _buildSignUpButton(BuildContext context, double screenHeight, double screenWidth) {
     return SizedBox(
       width: double.infinity,
       height: screenHeight * 0.065,
       child: ElevatedButton(
         onPressed: () {
-          // Validate email
+          // Validate the form
+          if (_firstNameController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Please enter your first name.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
+          if (_lastNameController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Please enter your last name.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
           if (_emailController.text.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Please enter your email.'),
-                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
-              ),
+              SnackBar(content: Text('Please enter your email.'),
+              backgroundColor: primaryColor,),
             );
             return;
           }
-
           if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(_emailController.text)) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Please enter a valid email.'),
-                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
-              ),
+              SnackBar(content: Text('Please enter a valid email.'),
+              backgroundColor: primaryColor,),
             );
             return;
           }
-
-          // Validate password (only check if it's not empty)
           if (_passwordController.text.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Please enter your password.'),
-                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
-              ),
+              SnackBar(content: Text('Please enter your password.'),
+              backgroundColor: primaryColor,),
             );
             return;
           }
-
-          // Handle login logic here
-          // For example, you can call your authentication service
+          String password = _passwordController.text;
+          // Password constraints
+          if (password.length < 8) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Password must be at least 8 characters.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
+          if (!RegExp(r'[A-Z]').hasMatch(password)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Password must contain at least one uppercase letter.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
+          if (!RegExp(r'[a-z]').hasMatch(password)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Password must contain at least one lowercase letter.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
+          if (!RegExp(r'[0-9]').hasMatch(password)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Password must contain at least one digit.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
+          if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Password must contain at least one special character.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
+          if (_confirmPasswordController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Please confirm your password.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
+          if (_passwordController.text != _confirmPasswordController.text) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Passwords do not match.'),
+              backgroundColor: primaryColor,),
+            );
+            return;
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
@@ -178,7 +250,7 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
         child: Text(
-          "Login",
+          "Register",
           style: TextStyle(
             fontSize: screenWidth * 0.05,
             fontWeight: FontWeight.bold,
@@ -188,72 +260,29 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildOrDivider(double screenWidth) {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: textColor)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Text(
-            "OR",
-            style: TextStyle(color: textColor, fontSize: screenWidth * 0.045),
-          ),
-        ),
-        Expanded(child: Divider(color: textColor)),
-      ],
-    );
-  }
-
-  Widget _buildGoogleLoginButton(double screenHeight, double screenWidth) {
-    return SizedBox(
-      width: double.infinity,
-      height: screenHeight * 0.065,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          // Handle Google login logic
-        },
-        icon: Image.asset("assets/google-logo.png", height: screenHeight * 0.03),
-        label: Text(
-          "Continue with Google",
-          style: TextStyle(
-            fontSize: screenWidth * 0.045,
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+  Widget _buildLoginOption(BuildContext context, double screenWidth) {
+    return Center(
+      child: RichText(
+        text: TextSpan(
+          text: "Already have an account? ",
+          style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
+          children: [
+            TextSpan(
+              text: "Sign In",
+              style: TextStyle(
+                color: textColor,
+                fontSize: screenWidth * 0.04,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+              recognizer: TapGestureRecognizer()..onTap=() {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()));
+              }
+            ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSignupOption(BuildContext context, double screenWidth) {
-    return Center(
-        child: RichText(
-          text: TextSpan(
-            text: "Don't have an account? ",
-            style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
-            children: [
-              TextSpan(
-                text: "Sign up",
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                ),
-                recognizer: TapGestureRecognizer()..onTap=(){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => RegistrationScreen()));
-                }
-              ),
-            ],
-          ),
-        ),
     );
   }
 }
@@ -282,11 +311,10 @@ class __PasswordFieldState extends State<_PasswordField> {
     return LayoutBuilder(
       builder: (context, constraints) {
         double inputHeight = constraints.maxWidth * 0.12; // Dynamic height
-
         return Container(
           height: inputHeight,
           decoration: BoxDecoration(
-            color: LoginScreen.primaryColor,
+            color: RegistrationScreen.primaryColor,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Padding(
@@ -294,16 +322,16 @@ class __PasswordFieldState extends State<_PasswordField> {
             child: TextFormField(
               controller: widget.controller,
               obscureText: _isHidden, // Control visibility with the state variable
-              style: TextStyle(color: LoginScreen.textColor),
+              style: TextStyle(color: RegistrationScreen.textColor),
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: widget.hintText,
-                hintStyle: TextStyle(color: LoginScreen.textColor),
+                hintStyle: TextStyle(color: RegistrationScreen.textColor),
                 suffixIcon: InkWell(
                   onTap: _togglePasswordView, // Toggle visibility on tap
                   child: Icon(
                     _isHidden ? Icons.visibility : Icons.visibility_off, // Change icon based on state
-                    color: LoginScreen.textColor, // Set the icon color
+                    color: RegistrationScreen.textColor, // Set the icon color
                   ),
                 ),
               ),
