@@ -1,92 +1,102 @@
+import 'package:aca_assist/home_screen.dart';
 import 'package:aca_assist/registration_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-  // Define colors as constants
+  @override
+  LoginScreenState createState() => LoginScreenState();
+}
+
+class LoginScreenState extends State<LoginScreen> {
   static const Color backgroundColor = Color(0xFF5C6B7D);
   static const Color primaryColor = Color(0xFF8196B0);
   static const Color textColor = Color(0xFFD6E4F0);
 
-  final _formKey = GlobalKey<FormState>(); // Form key for validation
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
-    // Get screen height and width
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Logo
-              Container(
-                width: double.infinity,
-                height: screenHeight * 0.3,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(image: AssetImage("assets/logo.png"), fit: BoxFit.cover),
-                ),
-              ),
-              Center(
-                child: Text(
-                  "Login to your account",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.06,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            child: Form(
+              key: _formKey,
+              child: Column(
                 children: [
-                  // Email Input
-                  _buildInputLabel("Email", screenWidth),
-                  SizedBox(height: 5),
-                  _inputField("Enter your email", _emailController),
-
-                  SizedBox(height: screenHeight * 0.015),
-
-                  // Password Input
-                  _buildInputLabel("Password", screenWidth),
-                  SizedBox(height: 5),
-                  _passwordInputField("Enter your password", _passwordController),
-
+                  Container(
+                    width: double.infinity,
+                    height: screenHeight * 0.3,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(image: AssetImage("assets/logo.png"), fit: BoxFit.cover),
+                    ),
+                  ),
+                  Center(
+                    child: Text(
+                      "Login to your account",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.06,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
                   SizedBox(height: screenHeight * 0.02),
-
-                  // Login Button
-                  _buildLoginButton(context, screenHeight, screenWidth),
-
-                  SizedBox(height: screenHeight * 0.015),
-
-                  // OR Divider
-                  _buildOrDivider(screenWidth),
-
-                  SizedBox(height: screenHeight * 0.015),
-
-                  // Google Login Button
-                  _buildGoogleLoginButton(screenHeight, screenWidth),
-
-                  SizedBox(height: screenHeight * 0.03),
-
-                  // Signup Option
-                  _buildSignupOption(context, screenWidth),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInputLabel("Email", screenWidth),
+                      SizedBox(height: 5),
+                      _inputField("Enter your email", _emailController),
+                      SizedBox(height: screenHeight * 0.015),
+                      _buildInputLabel("Password", screenWidth),
+                      SizedBox(height: 5),
+                      _passwordInputField("Enter your password", _passwordController),
+                      SizedBox(height: screenHeight * 0.005),
+                      _buildForgotPasswordText(context, screenWidth),
+                      SizedBox(height: screenHeight * 0.04),
+                      _buildLoginButton(context, screenHeight, screenWidth),
+                      SizedBox(height: screenHeight * 0.015),
+                      _buildOrDivider(screenWidth),
+                      SizedBox(height: screenHeight * 0.015),
+                      _buildGoogleLoginButton(screenHeight, screenWidth),
+                      SizedBox(height: screenHeight * 0.03),
+                      _buildSignupOption(context, screenWidth),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+          // Loader - only shown when _isLoading is true
+          if (_isLoading)
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Color.fromRGBO(0, 0, 0, 0.5), // Apply opacity
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -135,15 +145,21 @@ class LoginScreen extends StatelessWidget {
       width: double.infinity,
       height: screenHeight * 0.065,
       child: ElevatedButton(
-        onPressed: () {
-          // Validate email
+        onPressed: () async {
+          setState(() {
+            _isLoading = true;
+          });
+
           if (_emailController.text.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Please enter your email.'),
-                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
+                backgroundColor: primaryColor,
               ),
             );
+            setState(() {
+              _isLoading = false;
+            });
             return;
           }
 
@@ -151,25 +167,68 @@ class LoginScreen extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Please enter a valid email.'),
-                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
+                backgroundColor: primaryColor,
               ),
             );
+            setState(() {
+              _isLoading = false;
+            });
             return;
           }
 
-          // Validate password (only check if it's not empty)
           if (_passwordController.text.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Please enter your password.'),
-                backgroundColor: primaryColor, // Use primaryColor for the SnackBar
+                backgroundColor: primaryColor,
               ),
             );
+            setState(() {
+              _isLoading = false;
+            });
             return;
           }
 
-          // Handle login logic here
-          // For example, you can call your authentication service
+          try {
+            UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+              email: _emailController.text,
+              password: _passwordController.text,
+            );
+
+            if (!userCredential.user!.emailVerified) {
+              if(context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Please verify your email before logging in.'),
+                    backgroundColor: primaryColor,
+                  ),
+                );
+                setState(() {
+                  _isLoading = false;
+                });
+              }
+              return;
+            }
+            if(context.mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Invalid email or password. Please try again.'),
+                  backgroundColor: primaryColor,
+                ),
+              );
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
@@ -210,8 +269,61 @@ class LoginScreen extends StatelessWidget {
       width: double.infinity,
       height: screenHeight * 0.065,
       child: ElevatedButton.icon(
-        onPressed: () {
-          // Handle Google login logic
+        onPressed: () async {
+          setState(() {
+            _isLoading = true;
+          });
+
+          try {
+            GoogleSignIn googleSignIn = GoogleSignIn();
+            GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+            if (googleUser == null) {
+              setState(() {
+                _isLoading = false;
+              });
+              return;
+            }
+
+            GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+            OAuthCredential credential = GoogleAuthProvider.credential(
+              accessToken: googleAuth.accessToken,
+              idToken: googleAuth.idToken,
+            );
+
+            UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+            var userRef = FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid);
+            var userSnapshot = await userRef.get();
+
+            if (!userSnapshot.exists) {
+              await userRef.set({
+                'Uid': userCredential.user!.uid,
+                'Email': userCredential.user!.email,
+                'Name': userCredential.user!.displayName,
+                'ProfilePic': null,
+              });
+            }
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Google sign-in failed. Please try again.'),
+                  backgroundColor: primaryColor,
+                ),
+              );
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          }
         },
         icon: Image.asset("assets/google-logo.png", height: screenHeight * 0.03),
         label: Text(
@@ -234,26 +346,95 @@ class LoginScreen extends StatelessWidget {
 
   Widget _buildSignupOption(BuildContext context, double screenWidth) {
     return Center(
-        child: RichText(
-          text: TextSpan(
-            text: "Don't have an account? ",
-            style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
-            children: [
-              TextSpan(
-                text: "Sign up",
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                ),
-                recognizer: TapGestureRecognizer()..onTap=(){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => RegistrationScreen()));
-                }
+      child: RichText(
+        text: TextSpan(
+          text: "Don't have an account? ",
+          style: TextStyle(color: textColor, fontSize: screenWidth * 0.04),
+          children: [
+            TextSpan(
+              text: "Sign up",
+              style: TextStyle(
+                color: textColor,
+                fontSize: screenWidth * 0.04,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
               ),
-            ],
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => RegistrationScreen()));
+                },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordText(BuildContext context, double screenWidth) {
+    return GestureDetector(
+      onTap: () async {
+        String email = _emailController.text.trim();
+        if (email.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Please enter your email first."), backgroundColor: primaryColor),
+          );
+          return;
+        }
+
+        setState(() {
+          _isLoading = true;
+        });
+
+        // Check if email exists in Firestore
+        var userRef = FirebaseFirestore.instance.collection('Users').where('Email', isEqualTo: email);
+        var querySnapshot = await userRef.get();
+
+        if (querySnapshot.docs.isEmpty) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Email does not exist in the system."),
+                  backgroundColor: primaryColor),
+            );
+            setState(() {
+              _isLoading = false;
+            });
+          }
+          return;
+        }
+
+        // Send reset password email
+        try {
+          await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+          if(context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Password reset email sent!"),
+                  backgroundColor: primaryColor),
+            );
+          }
+        } catch (e) {
+          if(context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(
+                  "Failed to send reset email. Please try again."),
+                  backgroundColor: primaryColor),
+            );
+          }
+        }
+
+        setState(() {
+          _isLoading = false;
+        });
+      },
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: EdgeInsets.only(top: 8.0),
+          child: Text(
+            "Forgot your password?",
+            style: TextStyle(color: textColor, fontSize: screenWidth * 0.04, fontWeight: FontWeight.bold, decoration: TextDecoration.underline, decorationColor: textColor),
           ),
         ),
+      ),
     );
   }
 }
@@ -269,11 +450,11 @@ class _PasswordField extends StatefulWidget {
 }
 
 class __PasswordFieldState extends State<_PasswordField> {
-  bool _isHidden = true; // State variable to track password visibility
+  bool _isHidden = true;
 
   void _togglePasswordView() {
     setState(() {
-      _isHidden = !_isHidden; // Toggle the visibility state
+      _isHidden = !_isHidden;
     });
   }
 
@@ -281,29 +462,29 @@ class __PasswordFieldState extends State<_PasswordField> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        double inputHeight = constraints.maxWidth * 0.12; // Dynamic height
+        double inputHeight = constraints.maxWidth * 0.12;
 
         return Container(
           height: inputHeight,
           decoration: BoxDecoration(
-            color: LoginScreen.primaryColor,
+            color: LoginScreenState.primaryColor,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextFormField(
               controller: widget.controller,
-              obscureText: _isHidden, // Control visibility with the state variable
-              style: TextStyle(color: LoginScreen.textColor),
+              obscureText: _isHidden,
+              style: TextStyle(color: LoginScreenState.textColor),
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: widget.hintText,
-                hintStyle: TextStyle(color: LoginScreen.textColor),
+                hintStyle: TextStyle(color: LoginScreenState.textColor),
                 suffixIcon: InkWell(
-                  onTap: _togglePasswordView, // Toggle visibility on tap
+                  onTap: _togglePasswordView,
                   child: Icon(
-                    _isHidden ? Icons.visibility : Icons.visibility_off, // Change icon based on state
-                    color: LoginScreen.textColor, // Set the icon color
+                    _isHidden ? Icons.visibility : Icons.visibility_off,
+                    color: LoginScreenState.textColor,
                   ),
                 ),
               ),
