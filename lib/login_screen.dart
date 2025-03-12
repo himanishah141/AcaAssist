@@ -315,7 +315,7 @@ class LoginScreenState extends State<LoginScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Google sign-in failed. Please try again:$e'),
+                      content: Text('Google sign-in failed. Please try again.'),
                       backgroundColor: primaryColor,
                     ),
                   );
