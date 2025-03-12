@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -265,31 +266,82 @@ class LoginScreenState extends State<LoginScreen> {
 
   Widget _buildGoogleLoginButton(double screenHeight, double screenWidth) {
     return SizedBox(
-      width: double.infinity,
-      height: screenHeight * 0.065,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          // Add your sign-in logic here (if any)
-        },
-        icon: Image.asset("assets/google-logo.png", height: screenHeight * 0.03),
-        label: Text(
-          "Continue with Google",
-          style: TextStyle(
-            fontSize: screenWidth * 0.045,
-            fontWeight: FontWeight.bold,
-            color: textColor,  // Text color
-          ),
+        width: double.infinity,
+        height: screenHeight * 0.065,
+        child: ElevatedButton.icon(
+            onPressed: () async {
+              setState(() {
+                _isLoading = true;
+              });
+
+              try {
+                GoogleSignIn googleSignIn = GoogleSignIn();
+                GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+                if (googleUser == null) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                  return;
+                }
+
+                GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+                OAuthCredential credential = GoogleAuthProvider.credential(
+                  accessToken: googleAuth.accessToken,
+                  idToken: googleAuth.idToken,
+                );
+
+                UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+                var userRef = FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid);
+                var userSnapshot = await userRef.get();
+
+                if (!userSnapshot.exists) {
+                  await userRef.set({
+                    'Uid': userCredential.user!.uid,
+                    'Email': userCredential.user!.email,
+                    'Name': userCredential.user!.displayName,
+                    'ProfilePic': null,
+                  });
+                }
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Google sign-in failed. Please try again:$e'),
+                      backgroundColor: primaryColor,
+                    ),
+                  );
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              }
+            },
+    icon: Image.asset("assets/google-logo.png", height: screenHeight * 0.03),
+    label: Text("Continue with Google",
+    style: TextStyle(
+    fontSize: screenWidth * 0.045,
+      fontWeight: FontWeight.bold,
+      color: textColor,
+    ),
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,  // Button background color
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
+    ),
     );
   }
-
 
   Widget _buildSignupOption(BuildContext context, double screenWidth) {
     return Center(

@@ -1,20 +1,20 @@
 {
   "project_info": {
-    "project_number": "95411131741",
-    "project_id": "acaassist-74a57",
-    "storage_bucket": "acaassist-74a57.firebasestorage.app"
+    "project_number": "1087886251957",
+    "project_id": "acaassist-e5b7d",
+    "storage_bucket": "acaassist-e5b7d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:95411131741:android:962e4dd41bdc0406ce04b4",
+        "mobilesdk_app_id": "1:1087886251957:android:a779ec7c23e9b067632bfc",
         "android_client_info": {
           "package_name": "com.example.aca_assist"
         }
       },
       "oauth_client": [
         {
-          "client_id": "95411131741-mafafhp5g85im3hks35b2sh3784f64bd.apps.googleusercontent.com",
+          "client_id": "1087886251957-g4mki9a0pcnbg2plivvuceupjui0tc92.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.aca_assist",
@@ -22,20 +22,20 @@
           }
         },
         {
-          "client_id": "95411131741-6be84haggpc77vp686nnvili6sqm35f1.apps.googleusercontent.com",
+          "client_id": "1087886251957-7opu752uc97ijtiicga3pg6tt4d6dmo0.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBlG3zPm_D-hiepSGd5dNAc057g_7jvV1I"
+          "current_key": "AIzaSyCdkn2jTcAe9YXPF-mB_ryG8QpyBrz9AbU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "95411131741-6be84haggpc77vp686nnvili6sqm35f1.apps.googleusercontent.com",
+              "client_id": "1087886251957-7opu752uc97ijtiicga3pg6tt4d6dmo0.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
