@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -269,72 +268,8 @@ class LoginScreenState extends State<LoginScreen> {
       width: double.infinity,
       height: screenHeight * 0.065,
       child: ElevatedButton.icon(
-        onPressed: () async {
-          setState(() {
-            _isLoading = true;
-          });
-
-          try {
-            // Initialize Google SignIn
-            GoogleSignIn googleSignIn = GoogleSignIn();
-            GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-            if (googleUser == null) {
-              // If the user cancels the sign-in, stop loading
-              setState(() {
-                _isLoading = false;
-              });
-              return;
-            }
-
-            // Obtain authentication credentials
-            GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-            // Create Firebase credentials
-            OAuthCredential credential = GoogleAuthProvider.credential(
-              accessToken: googleAuth.accessToken,
-              idToken: googleAuth.idToken,
-            );
-
-            // Sign in with Firebase using the credentials
-            UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-
-            // Check if sign-in was successful
-            if (userCredential.user != null) {
-              // Sign-in successful, navigate to the home screen
-              if (mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                );
-              }
-            } else {
-              if (mounted) {
-                // If no user returned, show an error
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Google sign-in failed. Please try again.'),
-                    backgroundColor: primaryColor,
-                  ),
-                );
-              }
-            }
-          } catch (e) {
-            // Handle sign-in error
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Google sign-in failed: $e'),
-                  backgroundColor: primaryColor,
-                ),
-              );
-            }
-          } finally {
-            // Stop loading
-            setState(() {
-              _isLoading = false;
-            });
-          }
+        onPressed: () {
+          // Add your sign-in logic here (if any)
         },
         icon: Image.asset("assets/google-logo.png", height: screenHeight * 0.03),
         label: Text(
@@ -342,11 +277,11 @@ class LoginScreenState extends State<LoginScreen> {
           style: TextStyle(
             fontSize: screenWidth * 0.045,
             fontWeight: FontWeight.bold,
-            color: textColor,
+            color: textColor,  // Text color
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
+          backgroundColor: primaryColor,  // Button background color
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -354,6 +289,7 @@ class LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
 
   Widget _buildSignupOption(BuildContext context, double screenWidth) {
     return Center(
