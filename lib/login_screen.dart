@@ -275,54 +275,65 @@ class LoginScreenState extends State<LoginScreen> {
           });
 
           try {
+            // Initialize Google SignIn
             GoogleSignIn googleSignIn = GoogleSignIn();
             GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
             if (googleUser == null) {
+              // If the user cancels the sign-in, stop loading
               setState(() {
                 _isLoading = false;
               });
               return;
             }
 
+            // Obtain authentication credentials
             GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
+            // Create Firebase credentials
             OAuthCredential credential = GoogleAuthProvider.credential(
               accessToken: googleAuth.accessToken,
               idToken: googleAuth.idToken,
             );
 
+            // Sign in with Firebase using the credentials
             UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
 
-            var userRef = FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid);
-            var userSnapshot = await userRef.get();
-
-            if (!userSnapshot.exists) {
-              await userRef.set({
-                'Uid': userCredential.user!.uid,
-                'Email': userCredential.user!.email,
-                'Name': userCredential.user!.displayName,
-                'ProfilePic': null,
-              });
-            }
-            if (mounted) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => HomeScreen()),
-              );
+            // Check if sign-in was successful
+            if (userCredential.user != null) {
+              // Sign-in successful, navigate to the home screen
+              if (mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
+              }
+            } else {
+              if (mounted) {
+                // If no user returned, show an error
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Google sign-in failed. Please try again.'),
+                    backgroundColor: primaryColor,
+                  ),
+                );
+              }
             }
           } catch (e) {
+            // Handle sign-in error
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Google sign-in failed. Please try again:$e'),
+                  content: Text('Google sign-in failed: $e'),
                   backgroundColor: primaryColor,
                 ),
               );
-              setState(() {
-                _isLoading = false;
-              });
             }
+          } finally {
+            // Stop loading
+            setState(() {
+              _isLoading = false;
+            });
           }
         },
         icon: Image.asset("assets/google-logo.png", height: screenHeight * 0.03),
