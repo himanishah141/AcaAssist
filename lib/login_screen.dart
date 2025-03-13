@@ -188,6 +188,42 @@ class LoginScreenState extends State<LoginScreen> {
             });
             return;
           }
+          String password = _passwordController.text;
+          if (password.length < 8) {
+            setState(() {
+              _isLoading = false; // Stop loading
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Password must be at least 8 characters.'), backgroundColor: RegistrationScreen.primaryColor));
+            return;
+          }
+          if (!RegExp(r'[A-Z]').hasMatch(password)) {
+            setState(() {
+              _isLoading = false; // Stop loading
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Password must contain at least one uppercase letter.'), backgroundColor: RegistrationScreen.primaryColor));
+            return;
+          }
+          if (!RegExp(r'[a-z]').hasMatch(password)) {
+            setState(() {
+              _isLoading = false; // Stop loading
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Password must contain at least one lowercase letter.'), backgroundColor: RegistrationScreen.primaryColor));
+            return;
+          }
+          if (!RegExp(r'[0-9]').hasMatch(password)) {
+            setState(() {
+              _isLoading = false; // Stop loading
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Password must contain at least one digit.'), backgroundColor: RegistrationScreen.primaryColor));
+            return;
+          }
+          if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+            setState(() {
+              _isLoading = false; // Stop loading
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Password must contain at least one special character.'), backgroundColor: RegistrationScreen.primaryColor));
+            return;
+          }
 
           try {
             UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
