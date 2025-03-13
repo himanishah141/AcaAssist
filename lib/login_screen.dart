@@ -276,6 +276,7 @@ class LoginScreenState extends State<LoginScreen> {
 
               try {
                 GoogleSignIn googleSignIn = GoogleSignIn();
+                await googleSignIn.signOut();
                 GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
                 if (googleUser == null) {
