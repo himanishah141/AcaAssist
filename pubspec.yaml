@@ -34,7 +34,6 @@ flutter:
     - assets/analytics_logo.svg
     - assets/mic_logo.svg
     - assets/settings_logo.svg
-    - assets/profilepic_logo.svg
     - assets/todo_logo.svg
 
 flutter_icons:

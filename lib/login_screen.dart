@@ -339,7 +339,6 @@ class LoginScreenState extends State<LoginScreen> {
                     'Uid': userCredential.user!.uid,
                     'Email': userCredential.user!.email,
                     'Name': userCredential.user!.displayName,
-                    'ProfilePic': null,
                   });
                 }
                 if (mounted) {

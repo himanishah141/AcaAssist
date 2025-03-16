@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg package
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  // Define the background color (same as LoginScreen)
   static const Color backgroundColor = Color(0xFF5C6B7D);
   static const Color primaryColor = Color(0xFF8196B0);
   static const Color textColor = Color(0xFFD6E4F0);
@@ -14,9 +16,45 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0; // To store the selected index of the BottomNavigationBar
+  int _selectedIndex = 0;
+  String name = ""; // Variable to store the user's name
+  String initials = ""; // Variable to store the user's initials
 
-  // Dynamically adjust icon size based on screen width (percentage of screen width)
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  // Fetch user data from Firestore
+  Future<void> _fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc =
+      await FirebaseFirestore.instance.collection('Users').doc(user.uid).get();
+      if (userDoc.exists) {
+        setState(() {
+          name = userDoc['Name'] ?? "Guest"; // Set the user's name (or "Guest" if not available)
+          initials = _getInitials(name); // Set the initials based on the name
+        });
+      }
+    }
+  }
+
+  // Function to extract initials from the name
+  String _getInitials(String name) {
+    List<String> nameParts = name.split(' '); // Split the name into parts (first, last, etc.)
+    String initials = '';
+    if (nameParts.isNotEmpty) {
+      initials = nameParts[0][0].toUpperCase(); // First letter of the first name
+      if (nameParts.length > 1) {
+        initials += nameParts[1][0].toUpperCase(); // First letter of the last name
+      }
+    }
+    return initials;
+  }
+
+  // Dynamically adjust icon size based on screen width
   double getIconSize(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double iconSize = screenWidth * 0.15; // 15% of the screen width for icons
@@ -58,15 +96,16 @@ class HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: HomeScreen.backgroundColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: HomeScreen.backgroundColor,
-        elevation: 0, // No elevation, normal AppBar appearance
-        toolbarHeight: appBarHeight, // Dynamic AppBar height
+        iconTheme: IconThemeData(color: HomeScreen.textColor),
+        elevation: 0,
+        toolbarHeight: appBarHeight,
         title: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0), // Added horizontal padding for the title
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start, // Align text to the start (left)
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Title Text
               Text(
                 "Home",
                 style: TextStyle(
@@ -78,14 +117,28 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          // Profile Icon with independent size and padding to prevent shrinking
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16), // Horizontal padding only
-            child: SvgPicture.asset(
-              "assets/profilepic_logo.svg", // Replace with your profile icon asset path
-              width: iconSize, // Ensure the icon size stays the same
-              height: iconSize, // Ensure the icon size stays the same
-              fit: BoxFit.contain,
+          // Replace profilepic_logo.svg with initials
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            },
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: CircleAvatar(
+                backgroundColor: HomeScreen.primaryColor,
+                radius: iconSize / 2, // Set size based on icon size
+                child: Text(
+                  initials,
+                  style: TextStyle(
+                    color: HomeScreen.textColor,
+                    fontSize: iconSize / 2, // Adjust font size based on icon size
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -95,7 +148,7 @@ class HomeScreenState extends State<HomeScreen> {
           // Logo Image
           Container(
             width: double.infinity,
-            height: screenHeight * 0.3, // Dynamically scaled image size
+            height: screenHeight * 0.3,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("assets/logo.png"),
@@ -106,14 +159,14 @@ class HomeScreenState extends State<HomeScreen> {
 
           // SizedBox with Scrollable Tasks
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03), // Adds 5% padding to the sides
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
             child: SizedBox(
-              width: screenWidth * 0.9, // Box width is less than full screen (90% width)
-              height: screenHeight * 0.4, // Constrain the height of the box
+              width: screenWidth * 0.9,
+              height: screenHeight * 0.4,
               child: Container(
                 decoration: BoxDecoration(
                   color: HomeScreen.primaryColor,
-                  borderRadius: BorderRadius.circular(16), // Circular borders
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
@@ -138,13 +191,13 @@ class HomeScreenState extends State<HomeScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(width: 8), // Space between the text and the icon
+                          SizedBox(width: 8),
                           SvgPicture.asset(
-                            "assets/todo_logo.svg",  // Path to your todo_logo.svg asset
-                            width: screenWidth * 0.1,  // Same width as the text size
-                            height: screenWidth * 0.1, // Same height as the text size
+                            "assets/todo_logo.svg",
+                            width: screenWidth * 0.1,
+                            height: screenWidth * 0.1,
                             colorFilter: ColorFilter.mode(
-                              HomeScreen.textColor, // Set the color to match the text color
+                              HomeScreen.textColor,
                               BlendMode.srcIn,
                             ),
                             fit: BoxFit.contain,
@@ -155,10 +208,10 @@ class HomeScreenState extends State<HomeScreen> {
 
                     // Divider to separate header and tasks
                     Divider(
-                      color: HomeScreen.textColor, // Color of the divider
-                      thickness: 1, // Thickness of the divider
-                      indent: screenWidth * 0.02, // Responsive indent (5% of screen width)
-                      endIndent: screenWidth * 0.02, // Responsive end indent (5% of screen width)
+                      color: HomeScreen.textColor,
+                      thickness: 1,
+                      indent: screenWidth * 0.02,
+                      endIndent: screenWidth * 0.02,
                     ),
 
                     // Scrollable Tasks List
@@ -199,16 +252,16 @@ class HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomAppBar(
         color: HomeScreen.textColor,
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 0), // No additional vertical padding
+          padding: EdgeInsets.symmetric(vertical: 0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Evenly spaces the icons
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               // Home Icon
               GestureDetector(
                 onTap: () => _onItemTapped(0),
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 200),
-                  transform: Matrix4.translationValues(0, _selectedIndex == 0 ? -10 : 0, 0), // Raise selected icon
+                  transform: Matrix4.translationValues(0, _selectedIndex == 0 ? -10 : 0, 0),
                   child: SvgPicture.asset(
                     "assets/home_logo.svg",
                     width: iconSize,

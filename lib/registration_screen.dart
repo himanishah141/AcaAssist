@@ -279,7 +279,6 @@ class RegistrationScreenState extends State<RegistrationScreen> {
               'Uid': uid,
               'Name': fullName,
               'Email': _emailController.text,
-              'ProfilePic': null,  // Empty initially
             });
 
             // Send verification email
