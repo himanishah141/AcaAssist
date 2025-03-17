@@ -57,7 +57,7 @@ class HomeScreenState extends State<HomeScreen> {
   // Dynamically adjust icon size based on screen width
   double getIconSize(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double iconSize = screenWidth * 0.15; // 15% of the screen width for icons
+    double iconSize = screenWidth * 0.10; // 10% of the screen width for icons
     return iconSize < 50 ? 50 : iconSize; // Ensure the minimum icon size
   }
 
@@ -70,7 +70,7 @@ class HomeScreenState extends State<HomeScreen> {
   // Dynamically adjust font size based on screen width
   double getFontSize(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    return screenWidth * 0.06; // Font size will be 6% of the screen width
+    return screenWidth * 0.07; // Font size will be 7% of the screen width
   }
 
   // Update selected icon when clicked
@@ -134,7 +134,7 @@ class HomeScreenState extends State<HomeScreen> {
                   initials,
                   style: TextStyle(
                     color: HomeScreen.textColor,
-                    fontSize: iconSize / 2, // Adjust font size based on icon size
+                    fontSize: iconSize * 0.4, // Adjust font size based on icon size
                     fontWeight: FontWeight.bold,
                   ),
                 ),
