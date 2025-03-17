@@ -82,7 +82,7 @@ class ProfileScreenState extends State<ProfileScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     // Extract the initials from the user's name
-    String initials = name.isNotEmpty ? name.split(' ').map((e) => e[0]).take(2).join() : "";
+    String initials = name.trim().isNotEmpty ? name.trim().split(' ').where((e) => e.isNotEmpty).map((e) => e[0]).take(2).join() : "";
 
     return Scaffold(
       backgroundColor: ProfileScreen.backgroundColor,
@@ -100,88 +100,91 @@ class ProfileScreenState extends State<ProfileScreen> {
       ),
       body: Stack(
         children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05, // 5% of screen width
-              vertical: screenHeight * 0.02, // 2% of screen height
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Welcome Message
-                Center(
-                  child: Text(
-                    "Welcome, ${name.split(" ")[0]}!",
-                    style: TextStyle(
-                      color: ProfileScreen.textColor,
-                      fontSize: screenWidth * 0.07, // Responsive text size
-                      fontWeight: FontWeight.bold,
+          // Wrap the content in a SingleChildScrollView to make it scrollable
+          SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.05, // 5% of screen width
+                vertical: screenHeight * 0.02, // 2% of screen height
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Welcome Message
+                  Center(
+                    child: Text(
+                      "Welcome, ${name.split(" ")[0]}!",
+                      style: TextStyle(
+                        color: ProfileScreen.textColor,
+                        fontSize: screenWidth * 0.07, // Responsive text size
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: screenHeight * 0.02), // Adjust spacing
+                  SizedBox(height: screenHeight * 0.02), // Adjust spacing
 
-                // Profile Picture Section (Show Initials instead of Image)
-                Center(
-                  child: isLoading
-                      ? CircularProgressIndicator() // Show loader while updating
-                      : Container(
-                    width: screenWidth * 0.3,
-                    height: screenHeight * 0.15,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: ProfileScreen.primaryColor,
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.12, // Responsive font size for initials
-                          color: ProfileScreen.textColor,
-                          fontWeight: FontWeight.bold,
+                  // Profile Picture Section (Show Initials instead of Image)
+                  Center(
+                    child: isLoading
+                        ? CircularProgressIndicator() // Show loader while updating
+                        : Container(
+                      width: screenWidth * 0.3,
+                      height: screenHeight * 0.15,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: ProfileScreen.primaryColor,
+                      ),
+                      child: Center(
+                        child: Text(
+                          initials,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.12, // Responsive font size for initials
+                            color: ProfileScreen.textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: screenHeight * 0.05), // Responsive spacing
+                  SizedBox(height: screenHeight * 0.05), // Responsive spacing
 
-                // Name Field (Read-Only)
-                _buildLabel("Name", screenWidth),
-                _buildTextField(name, screenWidth, screenHeight),
+                  // Name Field (Read-Only)
+                  _buildLabel("Name", screenWidth),
+                  _buildTextField(name, screenWidth, screenHeight),
 
-                SizedBox(height: screenHeight * 0.03), // Responsive spacing
+                  SizedBox(height: screenHeight * 0.03), // Responsive spacing
 
-                // Email Field (Read-Only)
-                _buildLabel("Email", screenWidth),
-                _buildTextField(email, screenWidth, screenHeight),
+                  // Email Field (Read-Only)
+                  _buildLabel("Email", screenWidth),
+                  _buildTextField(email, screenWidth, screenHeight),
 
-                SizedBox(height: screenHeight * 0.05), // Responsive spacing
+                  SizedBox(height: screenHeight * 0.05), // Responsive spacing
 
-                // Logout Button
-                Center(
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : _logout, // Disable button when loading
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ProfileScreen.primaryColor, // Button color
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.1, // 10% of screen width
-                        vertical: screenHeight * 0.02, // 2% of screen height
+                  // Logout Button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _logout, // Disable button when loading
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ProfileScreen.primaryColor, // Button color
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.1, // 10% of screen width
+                          vertical: screenHeight * 0.02, // 2% of screen height
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      "Logout",
-                      style: TextStyle(
-                        color: ProfileScreen.textColor,
-                        fontSize: screenWidth * 0.05, // Responsive text size
+                      child: Text(
+                        "Logout",
+                        style: TextStyle(
+                          color: ProfileScreen.textColor,
+                          fontSize: screenWidth * 0.05, // Responsive text size
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -192,7 +195,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                 color: Color.fromRGBO(0, 0, 0, 0.5), // Semi-transparent black overlay
                 child: Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    color: ProfileScreen.textColor,
                   ),
                 ),
               ),
