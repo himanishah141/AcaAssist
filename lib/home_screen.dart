@@ -1,3 +1,4 @@
+import 'package:aca_assist/settings_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,13 +17,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // Default to home page
   String name = ""; // Variable to store the user's name
   String initials = ""; // Variable to store the user's initials
 
   @override
   void initState() {
     super.initState();
+    _selectedIndex = 0;  // Ensure the Home icon is selected by default
     _fetchUserData();
   }
 
@@ -324,7 +326,12 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               // Settings Icon
               GestureDetector(
-                onTap: () => _onItemTapped(5),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                },
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 200),
                   transform: Matrix4.translationValues(0, _selectedIndex == 5 ? -10 : 0, 0),
