@@ -31,11 +31,11 @@ flutter:
     - assets/google-logo.png
     - assets/home_logo.svg
     - assets/tasks_logo.svg
-    - assets/goals_logo.svg
     - assets/analytics_logo.svg
     - assets/mic_logo.svg
     - assets/settings_logo.svg
     - assets/todo_logo.svg
+    - assets/schedule_logo.svg
 
 flutter_icons:
   image_path: "assets/Icon.png"

@@ -407,7 +407,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                   duration: Duration(milliseconds: 200),
                   transform: Matrix4.translationValues(0, _selectedIndex == 2 ? -10 : 0, 0),
                   child: SvgPicture.asset(
-                    "assets/goals_logo.svg",
+                    "assets/schedule_logo.svg",
                     width: iconSize,
                     height: iconSize,
                     fit: BoxFit.contain,
