@@ -11,22 +11,32 @@ class ContactUsScreen extends StatelessWidget {
   // Function to open email app
   void _launchEmail(String email) async {
     final url = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      throw 'Could not launch email app.';
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch email app.';
+      }
+    } catch (e) {
+      throw 'Exception while launching email: $e';
     }
   }
+
 
   // Function to open phone dialer
   void _launchPhone(String phoneNumber) async {
     final url = Uri.parse('tel:$phoneNumber');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      throw 'Could not dial the phone number.';
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not dial the phone number.';
+      }
+    } catch (e) {
+      throw 'Exception while launching phone dialer: $e';
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
