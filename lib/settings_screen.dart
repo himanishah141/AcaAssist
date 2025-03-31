@@ -6,6 +6,7 @@ import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'home_screen.dart'; // Import HomeScreen
 import 'change_password_screen.dart'; // Import ChangePasswordScreen
+import 'set_password_screen.dart'; // Import SetPasswordScreen
 import 'about_us_screen.dart'; // Import AboutUsScreen
 import 'contact_us_screen.dart'; // Import ContactUsScreen
 
@@ -54,12 +55,38 @@ class SettingsScreenState extends State<SettingsScreen> {
         : "";
   }
 
-  // Navigate to Change Password screen
-  void _goToChangePassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ChangePasswordScreen()), // Navigate to ChangePasswordScreen
-    );
+  // Function to check if the user has a password set
+  Future<bool> _checkIfUserHasPassword() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false; // No user is signed in
+    }
+
+    // Check if the user has email/password provider linked
+    bool hasPassword = user.providerData.any((provider) => provider.providerId == 'password');
+
+    return hasPassword;
+  }
+
+  // Navigate to the appropriate screen based on whether the user has a password
+  void _goToManagePassword() async {
+    bool hasPassword = await _checkIfUserHasPassword();
+
+    // Check if the widget is still in the tree
+    if (!mounted) return;
+
+    // Navigate to the appropriate screen based on whether the user has a password
+    if (hasPassword) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ChangePasswordScreen()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SetPasswordScreen()),
+      );
+    }
   }
 
   // Navigate to About Us screen
@@ -290,8 +317,8 @@ class SettingsScreenState extends State<SettingsScreen> {
                           vertical: screenHeight * 0.01,
                         ),
                         leading: Icon(Icons.lock, color: SettingsScreen.textColor, size: getIconSize(context) * 0.7),
-                        title: Text("Change Password", style: TextStyle(color: SettingsScreen.textColor, fontSize: getFontSize(context) * 0.7)),
-                        onTap: _goToChangePassword, // Navigate to Change Password screen
+                        title: Text("Set/Change Password", style: TextStyle(color: SettingsScreen.textColor, fontSize: getFontSize(context) * 0.7)),
+                        onTap: _goToManagePassword, // Navigate to Change Password screen
                       ),
                       // New: Enable/Disable Notifications
                       ListTile(
