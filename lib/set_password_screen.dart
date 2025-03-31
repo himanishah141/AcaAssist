@@ -127,9 +127,10 @@ class SetPasswordScreenState extends State<SetPasswordScreen> {
             ),
           );
 
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
+                (Route<dynamic> route) => false,  // This removes all routes from the stack
           );
         }
       }

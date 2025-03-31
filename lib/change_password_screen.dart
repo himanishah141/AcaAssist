@@ -197,8 +197,11 @@ class ChangePasswordScreenState extends State<ChangePasswordScreen> {
               backgroundColor: ChangePasswordScreen.primaryColor,
             ),
           );
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => LoginScreen()));
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+                (Route<dynamic> route) => false,  // This removes all routes from the stack
+          );
         }
       }
     } catch (e) {
