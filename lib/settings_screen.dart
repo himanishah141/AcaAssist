@@ -9,6 +9,10 @@ import 'change_password_screen.dart'; // Import ChangePasswordScreen
 import 'set_password_screen.dart'; // Import SetPasswordScreen
 import 'about_us_screen.dart'; // Import AboutUsScreen
 import 'contact_us_screen.dart'; // Import ContactUsScreen
+import 'study_schedule_screen.dart'; // Import the Study Schedule screen
+import 'task_management_screen.dart'; // Import TaskManagementScreen
+import 'analytics_screen.dart'; // Import AnalyticsScreen
+import 'mic_screen.dart'; // Import MicScreen
 
 class SettingsScreen extends StatefulWidget {
   static const Color backgroundColor = Color(0xFF5C6B7D);
@@ -393,9 +397,10 @@ class SettingsScreenState extends State<SettingsScreen> {
               // Home Icon
               GestureDetector(
                 onTap: () {
+                  _onItemTapped(0); // Manually set index
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    MaterialPageRoute(builder: (context) => const HomeScreen()), // Navigate to Home screen
                   );
                 },
                 child: AnimatedContainer(
@@ -412,7 +417,11 @@ class SettingsScreenState extends State<SettingsScreen> {
               // Tasks Icon
               GestureDetector(
                 onTap: () {
-                  // Handle task navigation
+                  _onItemTapped(1); // Manually set index
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TaskManagementScreen()), // Navigate to TaskManagementScreen
+                  );
                 },
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 200),
@@ -428,7 +437,11 @@ class SettingsScreenState extends State<SettingsScreen> {
               // Goals Icon
               GestureDetector(
                 onTap: () {
-                  // Handle goals navigation
+                  _onItemTapped(2); // Manually set index
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const StudyScheduleScreen()), // Navigate to StudyScheduleScreen
+                  );
                 },
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 200),
@@ -444,7 +457,11 @@ class SettingsScreenState extends State<SettingsScreen> {
               // Analytics Icon
               GestureDetector(
                 onTap: () {
-                  // Handle analytics navigation
+                  _onItemTapped(3); // Manually set index
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AnalyticsScreen()), // Navigate to AnalyticsScreen
+                  );
                 },
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 200),
@@ -460,7 +477,11 @@ class SettingsScreenState extends State<SettingsScreen> {
               // Mic Icon
               GestureDetector(
                 onTap: () {
-                  // Handle mic navigation
+                  _onItemTapped(4); // Manually set index
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MicScreen()), // Navigate to MicScreen
+                  );
                 },
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 200),
@@ -475,7 +496,13 @@ class SettingsScreenState extends State<SettingsScreen> {
               ),
               // Settings Icon (already in place)
               GestureDetector(
-                onTap: () => _onItemTapped(5),
+                onTap: () {
+                  _onItemTapped(5); // Manually set index
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()), // Navigate to SettingsScreen
+                  );
+                },
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 200),
                   transform: Matrix4.translationValues(0, _selectedIndex == 5 ? -10 : 0, 0),

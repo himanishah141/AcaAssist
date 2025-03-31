@@ -1,38 +1,36 @@
-import 'package:aca_assist/settings_screen.dart';
-import 'package:aca_assist/study_schedule_screen.dart';
-import 'package:aca_assist/mic_screen.dart';
-import 'package:aca_assist/analytics_screen.dart';
-import 'package:aca_assist/task_management_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Import flutter_svg package
-import 'package:aca_assist/profile_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'profile_screen.dart'; // Import ProfileScreen
+import 'home_screen.dart'; // Import HomeScreen
+import 'settings_screen.dart'; // Import SettingsScreen
+import 'task_management_screen.dart'; // Import TaskManagementScreen
+import 'analytics_screen.dart'; // Import AnalyticsScreen
+import 'study_schedule_screen.dart'; // Import StudyScheduleScreen
 
-class HomeScreen extends StatefulWidget {
+class MicScreen extends StatefulWidget {
   static const Color backgroundColor = Color(0xFF5C6B7D);
   static const Color primaryColor = Color(0xFF8196B0);
   static const Color textColor = Color(0xFFD6E4F0);
 
-  const HomeScreen({super.key});
+  const MicScreen({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  MicScreenState createState() => MicScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0; // Default to home page
-  String name = ""; // Variable to store the user's name
-  String initials = ""; // Variable to store the user's initials
+class MicScreenState extends State<MicScreen> {
+  int _selectedIndex = 4; // Default to mic screen
+  String name = "";
+  String initials = "";
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = 0;  // Ensure the Home icon is selected by default
     _fetchUserData();
   }
 
-  // Fetch user data from Firestore
   Future<void> _fetchUserData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -40,40 +38,35 @@ class HomeScreenState extends State<HomeScreen> {
       await FirebaseFirestore.instance.collection('Users').doc(user.uid).get();
       if (userDoc.exists) {
         setState(() {
-          name = userDoc['Name'] ?? "Guest"; // Set the user's name (or "Guest" if not available)
-          initials = _getInitials(name); // Set the initials based on the name
+          name = userDoc['Name'] ?? "Guest";
+          initials = _getInitials(name);
         });
       }
     }
   }
 
-  // Function to extract initials from the name
   String _getInitials(String name) {
     return name.trim().isNotEmpty
         ? name.trim().split(' ').where((e) => e.isNotEmpty).map((e) => e[0]).take(2).join()
         : "";
   }
 
-  // Dynamically adjust icon size based on screen width
   double getIconSize(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double iconSize = screenWidth * 0.10; // 10% of the screen width for icons
-    return iconSize < 50 ? 50 : iconSize; // Ensure the minimum icon size
+    double iconSize = screenWidth * 0.10;
+    return iconSize < 50 ? 50 : iconSize;
   }
 
-  // Dynamically adjust AppBar height based on screen size
   double getAppBarHeight(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    return screenHeight * 0.08; // AppBar height will be 8% of the screen height
+    return screenHeight * 0.08;
   }
 
-  // Dynamically adjust font size based on screen width
   double getFontSize(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    return screenWidth * 0.07; // Font size will be 7% of the screen width
+    return screenWidth * 0.07;
   }
 
-  // Update selected icon when clicked
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -82,23 +75,17 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Getting screen width and height
     double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
-
-    // Set icon size
     double iconSize = getIconSize(context);
-    // Set AppBar height (same as BottomAppBar height)
     double appBarHeight = getAppBarHeight(context);
-    // Set font size for title
     double fontSize = getFontSize(context);
 
     return Scaffold(
-      backgroundColor: HomeScreen.backgroundColor,
+      backgroundColor: MicScreen.backgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: HomeScreen.backgroundColor,
-        iconTheme: IconThemeData(color: HomeScreen.textColor),
+        backgroundColor: MicScreen.backgroundColor,
+        iconTheme: IconThemeData(color: MicScreen.textColor),
         elevation: 0,
         toolbarHeight: appBarHeight,
         title: Padding(
@@ -107,9 +94,9 @@ class HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
-                "Home",
+                "Voice Assistant",
                 style: TextStyle(
-                  color: HomeScreen.textColor,
+                  color: MicScreen.textColor,
                   fontSize: fontSize,
                 ),
               ),
@@ -117,7 +104,6 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          // Replace profilepic_logo.svg with initials
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -128,13 +114,13 @@ class HomeScreenState extends State<HomeScreen> {
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: CircleAvatar(
-                backgroundColor: HomeScreen.primaryColor,
-                radius: iconSize / 2, // Set size based on icon size
+                backgroundColor: MicScreen.primaryColor,
+                radius: iconSize / 2,
                 child: Text(
                   initials,
                   style: TextStyle(
-                    color: HomeScreen.textColor,
-                    fontSize: iconSize * 0.4, // Adjust font size based on icon size
+                    color: MicScreen.textColor,
+                    fontSize: iconSize * 0.4,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -143,10 +129,9 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(  // Wrapping the entire body in SingleChildScrollView
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            // Logo Image
             Container(
               width: double.infinity,
               height: screenHeight * 0.3,
@@ -157,102 +142,11 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // SizedBox with Scrollable Tasks
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
-              child: SizedBox(
-                width: screenWidth * 0.9,
-                height: screenHeight * 0.4,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: HomeScreen.primaryColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      // Header Row for Today's Tasks
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16),
-                          ),
-                          color: HomeScreen.primaryColor,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Today's Tasks",
-                              style: TextStyle(
-                                color: HomeScreen.textColor,
-                                fontSize: screenWidth * 0.06,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            SvgPicture.asset(
-                              "assets/todo_logo.svg",
-                              width: screenWidth * 0.1,
-                              height: screenWidth * 0.1,
-                              colorFilter: ColorFilter.mode(
-                                HomeScreen.textColor,
-                                BlendMode.srcIn,
-                              ),
-                              fit: BoxFit.contain,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Divider to separate header and tasks
-                      Divider(
-                        color: HomeScreen.textColor,
-                        thickness: 1,
-                        indent: screenWidth * 0.02,
-                        endIndent: screenWidth * 0.02,
-                      ),
-
-                      // Scrollable Tasks List
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              // Tasks List (you can replace this with dynamic task data)
-                              for (int i = 1; i <= 10; i++)
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 8),
-                                  child: Card(
-                                    color: HomeScreen.textColor,
-                                    elevation: 4,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Text(
-                                        'Task $i',
-                                        style: TextStyle(
-                                          color: HomeScreen.backgroundColor,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        color: HomeScreen.textColor,
+        color: MicScreen.textColor,
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 0),
           child: Row(
@@ -298,7 +192,7 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // Goals Icon
+              // Study Schedule Icon
               GestureDetector(
                 onTap: () {
                   _onItemTapped(2); // Manually set index
