@@ -57,8 +57,10 @@ class ProfileScreenState extends State<ProfileScreen> {
       }
       // Check if the widget is still mounted before navigating
       if (mounted) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => LoginScreen())); // Navigate to LoginScreen directly
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => LoginScreen()), // Navigate to login screen
+              (route) => false, // Removes all previous routes
+        );
       }
     } catch (e) {
       if (mounted) {
