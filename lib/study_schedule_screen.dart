@@ -83,6 +83,7 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
   Widget build(BuildContext context) {
     // Getting screen width and height
     double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
     double iconSize = getIconSize(context); // Set icon size
     double appBarHeight = getAppBarHeight(context); // Set AppBar height
     double fontSize = getFontSize(context); // Set font size for title
@@ -154,13 +155,6 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: StudyScheduleScreen.primaryColor, // Button color
-                  padding: EdgeInsets.symmetric(vertical: 16), // Button padding
-                  textStyle: TextStyle(
-                    fontSize: fontSize * 0.5, // Button text size
-                  ),
-                ),
                 onPressed: () {
                   // Navigate to AcademicDetailsScreen when pressed
                   Navigator.push(
@@ -168,9 +162,33 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
                     MaterialPageRoute(builder: (context) => const AcademicDetailsScreen()),
                   );
                 },
-                child: Text("Edit Subject Details"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AcademicDetailsScreen.primaryColor, // Button color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), // Rounded corners
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02, horizontal: screenWidth * 0.1), // Responsive padding
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min, // This will prevent stretching and make the button size dynamic
+                  children: [
+                    Text(
+                      "Edit Subject Details",
+                      style: TextStyle(
+                        color: AcademicDetailsScreen.textColor, // Button text color
+                        fontSize: fontSize * 0.6, // Responsive font size
+                      ),
+                    ),
+                    SizedBox(width: 8), // Space between text and icon
+                    Icon(
+                      Icons.arrow_forward, // Right arrow icon
+                      color: AcademicDetailsScreen.textColor, // Icon color
+                      size: fontSize * 0.6, // Icon size, same as text size
+                    ),
+                  ],
+                ),
               ),
-            ),
+            )
           ],
         ),
       ),

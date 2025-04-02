@@ -26,14 +26,30 @@ class AcademicDetailsScreenState extends State<AcademicDetailsScreen> {
   // Validate Subject Name
   String? _validateSubjectName(String subjectName) {
     String trimmedName = subjectName.replaceAll(RegExp(r"\s+"), ""); // Remove spaces
+
+    // Check if the name is empty
     if (trimmedName.isEmpty) {
       return 'Subject name cannot be empty.';
     }
-    if (trimmedName.length > 15) {
-      return 'Subject name should not exceed 15 characters.';
+
+    // Check if the name exceeds 25 characters
+    if (trimmedName.length > 25) {
+      return 'Subject name should not exceed 25 characters.';
     }
+
+    // Check if the name starts with a letter
+    if (!RegExp(r'^[a-zA-Z]').hasMatch(trimmedName)) {
+      return 'Subject name must start with a letter.';
+    }
+
+    // Check if the name only contains valid characters (letters, numbers, spaces, +, -, and #)
+    if (!RegExp(r'^[a-zA-Z0-9\s+\-#]+$').hasMatch(trimmedName)) {
+      return 'Subject name can only contain letters, numbers, spaces, +, -, and #.';
+    }
+
     return null;
   }
+
 
   // Validate Weekly Study Time
   String? _validateWeeklyStudyTime(String weeklyStudyTime) {
