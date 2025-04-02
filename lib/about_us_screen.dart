@@ -41,7 +41,6 @@ class AboutUsScreenState extends State<AboutUsScreen> {
                 style: TextStyle(
                   color: AboutUsScreen.textColor,
                   fontSize: fontSize,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],

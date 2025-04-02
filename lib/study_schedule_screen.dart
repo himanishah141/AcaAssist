@@ -8,6 +8,7 @@ import 'settings_screen.dart'; // Import SettingsScreen
 import 'mic_screen.dart'; // Import MicScreen
 import 'analytics_screen.dart'; // Import AnalyticsScreen
 import 'task_management_screen.dart'; // Import TaskManagementScreen
+import 'academic_details_screen.dart'; // Import AcademicDetailsScreen
 
 class StudyScheduleScreen extends StatefulWidget {
   static const Color backgroundColor = Color(0xFF5C6B7D);
@@ -147,6 +148,27 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
                   image: AssetImage("assets/logo.png"),
                   fit: BoxFit.cover,
                 ),
+              ),
+            ),
+            // Add the "Edit Subject Details" button
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: StudyScheduleScreen.primaryColor, // Button color
+                  padding: EdgeInsets.symmetric(vertical: 16), // Button padding
+                  textStyle: TextStyle(
+                    fontSize: fontSize * 0.5, // Button text size
+                  ),
+                ),
+                onPressed: () {
+                  // Navigate to AcademicDetailsScreen when pressed
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AcademicDetailsScreen()),
+                  );
+                },
+                child: Text("Edit Subject Details"),
               ),
             ),
           ],

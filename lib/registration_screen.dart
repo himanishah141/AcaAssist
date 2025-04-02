@@ -31,11 +31,12 @@ class RegistrationScreenState extends State<RegistrationScreen> {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+    double fontSize = screenWidth * 0.04;
 
     return Scaffold(
       backgroundColor: RegistrationScreen.backgroundColor,
       appBar: AppBar(
-        title: Text("Register", style: TextStyle(color: RegistrationScreen.textColor)),
+        title: Text("Register", style: TextStyle(color: RegistrationScreen.textColor,fontSize: fontSize * 1.5)),
         backgroundColor: RegistrationScreen.backgroundColor,
         iconTheme: IconThemeData(color: RegistrationScreen.textColor),
       ),

@@ -56,7 +56,6 @@ class ContactUsScreen extends StatelessWidget {
             style: TextStyle(
               color: ContactUsScreen.textColor,
               fontSize: screenWidth * 0.06,  // Reduced font size for the title
-              fontWeight: FontWeight.bold,
             ),
           ),
         ),

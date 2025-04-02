@@ -238,7 +238,6 @@ class ChangePasswordScreenState extends State<ChangePasswordScreen> {
             style: TextStyle(
               color: ChangePasswordScreen.textColor,
               fontSize: fontSize * 1.5, // Title font size adjusted
-              fontWeight: FontWeight.bold,
             ),
           ),
         ),

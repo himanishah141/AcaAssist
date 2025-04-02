@@ -168,7 +168,6 @@ class SetPasswordScreenState extends State<SetPasswordScreen> {
             style: TextStyle(
               color: SetPasswordScreen.textColor,
               fontSize: fontSize * 1.5, // Title font size adjusted
-              fontWeight: FontWeight.bold,
             ),
           ),
         ),
