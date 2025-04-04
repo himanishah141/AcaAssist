@@ -87,6 +87,7 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
     double iconSize = getIconSize(context); // Set icon size
     double appBarHeight = getAppBarHeight(context); // Set AppBar height
     double fontSize = getFontSize(context); // Set font size for title
+    double fontSize2 = screenWidth * 0.04;
 
     return Scaffold(
       backgroundColor: StudyScheduleScreen.backgroundColor,
@@ -171,24 +172,246 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min, // This will prevent stretching and make the button size dynamic
-                  children: [
-                    Text(
-                      "Edit Subject Details",
-                      style: TextStyle(
-                        color: AcademicDetailsScreen.textColor, // Button text color
-                        fontSize: fontSize * 0.6, // Responsive font size
+                    children: [
+                      Text(
+                        "Edit Subject Details",
+                        style: TextStyle(
+                          color: AcademicDetailsScreen.textColor, // Button text color
+                          fontSize: fontSize * 0.6, // Responsive font size
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 8), // Space between text and icon
-                    Icon(
-                      Icons.arrow_forward, // Right arrow icon
-                      color: AcademicDetailsScreen.textColor, // Icon color
-                      size: fontSize * 0.6, // Icon size, same as text size
-                    ),
-                  ],
+                      SizedBox(width: 8), // Space between text and icon
+                      Icon(
+                        Icons.arrow_forward, // Right arrow icon
+                        color: AcademicDetailsScreen.textColor, // Icon color
+                        size: fontSize * 0.6, // Icon size, same as text size
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            )
+              SizedBox(height: screenHeight * 0.03),
+              Center(
+                child: Text(
+                  'Weekly Timetable',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.07,  // Responsive font size based on screen width
+                    fontWeight: FontWeight.bold,  // Makes the heading bold
+                    color: StudyScheduleScreen.textColor, // Use your custom text color
+                    decoration: TextDecoration.underline, // Underline the text
+                    decorationColor: StudyScheduleScreen.textColor, // Color of the underline
+                    decorationThickness: 1,
+                  ),
+                ),
+              ),
+              Card(
+                elevation: 4,
+                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.02, horizontal: screenWidth * 0.03),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                color: StudyScheduleScreen.primaryColor, // Card background color
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    height: screenHeight * 0.3, // Fixed height for the card
+                    child: Scrollbar( // Vertical scrollbar indicator
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical, // Vertical scroll for the entire table
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(FirebaseAuth.instance.currentUser?.uid)
+                              .collection('GeneratedTimetable')
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            }
+
+                            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  "No timetable generated yet.",
+                                  style: TextStyle(color: StudyScheduleScreen.textColor, fontSize: fontSize2),
+                                ),
+                              );
+                            }
+
+                            // Group subjects by Day
+                            var timetables = snapshot.data!.docs.map((doc) {
+                              return {
+                                'Day': doc['Day'],
+                                'Subjects': doc['Subjects'],
+                              };
+                            }).toList();
+
+                            // Create a map for each day to group subjects by day
+                            Map<String, List<Map<String, dynamic>>> groupedTimetables = {
+                              'Monday': [],
+                              'Tuesday': [],
+                              'Wednesday': [],
+                              'Thursday': [],
+                              'Friday': [],
+                              'Saturday': [],
+                              'Sunday': [],
+                            };
+
+                            // Group subjects for each day
+                            for (var timetable in timetables) {
+                              String day = timetable['Day'];
+                              List<dynamic> subjects = timetable['Subjects'] ?? [];
+
+                              if (groupedTimetables.containsKey(day)) {
+                                // Ensure subjects are of type List<Map<String, dynamic>> before adding
+                                List<Map<String, dynamic>> subjectList = subjects.map<Map<String, dynamic>>((subject) {
+                                  return subject is Map<String, dynamic> ? subject : {};
+                                }).toList();
+                                groupedTimetables[day]?.addAll(subjectList);
+                              }
+                            }
+
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal, // Horizontal scroll for DataTable
+                              child: Scrollbar( // Horizontal scrollbar indicator
+                                child: DataTable(
+                                  columnSpacing: screenWidth * 0.05, // Adjust column spacing based on screen width
+                                  headingRowHeight: screenHeight * 0.07, // Fixed heading row height
+                                  dataRowMinHeight: 0,  // Minimum height for dynamic row sizing
+                                  dataRowMaxHeight: double.infinity,  // Max height set to infinity for dynamic rows
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Color.fromRGBO(255, 255, 255, 0.3),
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  columns: [
+                                    DataColumn(
+                                      label: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08), // Custom padding
+                                        child: Center(
+                                          child: Text(
+                                            'Day',
+                                            style: TextStyle(
+                                              color: StudyScheduleScreen.textColor,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: fontSize2 * 1.2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Center(
+                                        child: Text(
+                                          'Subject Name',
+                                          style: TextStyle(
+                                            color: StudyScheduleScreen.textColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: fontSize2 * 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Center(
+                                        child: Text(
+                                          'Hours',
+                                          style: TextStyle(
+                                            color: StudyScheduleScreen.textColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: fontSize2 * 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  rows: [
+                                    // For each day, create a row
+                                    for (var day in groupedTimetables.keys)
+                                      DataRow(cells: [
+                                        DataCell(
+                                          Center(
+                                            child: Text(
+                                              day,
+                                              style: TextStyle(
+                                                color: StudyScheduleScreen.textColor,
+                                                fontSize: fontSize2 * 1.1,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Align( // Align the subject name content to the left
+                                            alignment: Alignment.centerLeft, // Align left
+                                            child: groupedTimetables[day]!.isEmpty
+                                                ? Text(
+                                              'Break',
+                                              style: TextStyle(
+                                                color: StudyScheduleScreen.textColor,
+                                                fontSize: fontSize2 * 1.1,
+                                              ),
+                                            )
+                                                : SingleChildScrollView(  // Vertical scroll inside the cell for subjects
+                                              scrollDirection: Axis.vertical,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: groupedTimetables[day]!.map<Widget>((subject) {
+                                                  return Text(
+                                                    subject['SubjectName'] ?? 'Unknown Subject',
+                                                    style: TextStyle(
+                                                      color: StudyScheduleScreen.textColor,
+                                                      fontSize: fontSize2 * 1.1,
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Center(
+                                            child: groupedTimetables[day]!.isEmpty
+                                                ? Text(
+                                              '-',
+                                              style: TextStyle(
+                                                color: StudyScheduleScreen.textColor,
+                                                fontSize: fontSize2 * 1.1,
+                                              ),
+                                            )
+                                                : SingleChildScrollView(  // Vertical scroll inside the cell for hours
+                                              scrollDirection: Axis.vertical,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: groupedTimetables[day]!.map<Widget>((subject) {
+                                                  return Text(
+                                                    subject['Hours'] != null
+                                                        ? subject['Hours'].toString()
+                                                        : '0',
+                                                    style: TextStyle(
+                                                      color: StudyScheduleScreen.textColor,
+                                                      fontSize: fontSize2 * 1.1,
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ])
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            SizedBox(height: screenHeight * 0.02),
           ],
         ),
       ),
