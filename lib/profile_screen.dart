@@ -221,6 +221,8 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   // Text Field Widget
   Widget _buildTextField(String value, double screenWidth, double screenHeight) {
+    // Replace multiple spaces with a single space
+    String formattedValue = value.replaceAll(RegExp(r'\s+'), ' ').trim();
     return Container(
       height: screenHeight * 0.07, // 7% of screen height
       decoration: BoxDecoration(
@@ -230,7 +232,7 @@ class ProfileScreenState extends State<ProfileScreen> {
       alignment: Alignment.centerLeft,
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04), // Responsive padding
       child: Text(
-        value,
+        formattedValue,
         style: TextStyle(
           color: ProfileScreen.textColor,
           fontSize: screenWidth * 0.045, // Responsive text size
