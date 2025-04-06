@@ -75,7 +75,6 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
     }
   }
 
-
   Future<List<String>> _fetchResourcesFromAPI(String subject, String topic) async {
     List<String> resources = [];
 
@@ -111,11 +110,9 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
           if (topic.isNotEmpty) {
             // If topic is specified, fetch videos and sort by view count
             items.sort((a, b) {
-              // Safely get the viewCount for both items, default to 0 if not available
               int viewsA = 0;
               int viewsB = 0;
 
-              // Check if the 'statistics' and 'viewCount' fields are present
               if (a['statistics'] != null && a['statistics']['viewCount'] != null) {
                 viewsA = int.tryParse(a['statistics']['viewCount'] ?? '0') ?? 0;
               }
@@ -131,7 +128,9 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
             for (var item in items.take(5)) {
               if (item['id'] != null && item['id']['videoId'] != null) {
                 String videoUrl = "https://www.youtube.com/watch?v=${item['id']['videoId']}";
-                resources.add(videoUrl);
+                if (await _isLinkWorking(videoUrl)) {
+                  resources.add(videoUrl);
+                }
               }
             }
           } else {
@@ -165,7 +164,9 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
                 for (var item in channelItems.take(5)) {
                   if (item['snippet'] != null && item['snippet']['channelId'] != null) {
                     String channelUrl = "https://www.youtube.com/channel/${item['snippet']['channelId']}";
-                    resources.add(channelUrl);
+                    if (await _isLinkWorking(channelUrl)) {
+                      resources.add(channelUrl);
+                    }
                   }
                 }
               }
@@ -196,7 +197,7 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
     if (topic.isNotEmpty) {
       prompt += " The topic is '$topic'.";
     }
-    prompt += "\nProvide only the resource links (strictly no descriptions or extra text).Only reply in the below format do not write anything else coz this is an api call";
+    prompt += "\nProvide only the resource links (strictly no descriptions or extra text). Only reply in the below format do not write anything else coz this is an api call";
     prompt += "\n\nPlease format the response as follows:";
     prompt += "\nFor each link, use this format: `1). ChannelName/WebsiteName - Link`";
     prompt += "\nThe YouTube links should be listed first and then the website links.";
@@ -223,7 +224,11 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
     String resourcesText = responseAI.text?.trim() ?? '';
     if (resourcesText.isNotEmpty) {
       List<String> aiResources = _parseResources(resourcesText);
-      resources.addAll(aiResources);
+      for (var resource in aiResources) {
+        if (await _isLinkWorking(resource)) {
+          resources.add(resource);
+        }
+      }
     }
 
     // Limit the total resources to 10 (5 YouTube links and 5 websites)
@@ -237,6 +242,17 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
 
     return resources;
   }
+
+// Helper function to check if a link is working
+  Future<bool> _isLinkWorking(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url)).timeout(Duration(seconds: 10));
+      return response.statusCode == 200;  // Check if the status code is 200 (OK)
+    } catch (e) {
+      return false;  // If there's an error, consider the link unavailable
+    }
+  }
+
 
 // Method to parse the response into resource links
   List<String> _parseResources(String resourcesText) {
