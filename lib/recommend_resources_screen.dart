@@ -376,7 +376,21 @@ class RecommendResourcesScreenState extends State<RecommendResourcesScreen> {
                                               padding: const EdgeInsets.symmetric(vertical: 4.0),
                                               child: GestureDetector(
                                                 onTap: () async {
-                                                  final Uri uri = Uri.parse(resource);
+                                                  final RegExp urlRegex = RegExp(r'(https?://\S+)');
+                                                  final extractedUrl = urlRegex.firstMatch(resource)?.group(0);
+
+                                                  if (extractedUrl == null) {
+                                                    if (context.mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text("Invalid link format."),
+                                                          backgroundColor: RecommendResourcesScreen.primaryColor,
+                                                        ),
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
+                                                  final Uri uri = Uri.parse(extractedUrl);
                                                   if (await canLaunchUrl(uri)) {
                                                     // If the resource is a YouTube link, launch it in the YouTube app or external browser
                                                     if (resource.contains("youtube.com") || resource.contains("youtu.be")) {
