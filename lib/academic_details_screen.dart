@@ -567,7 +567,7 @@ class AcademicDetailsScreenState extends State<AcademicDetailsScreen> {
                               // Card containing the DataTable
                               Card(
                                 elevation: 4,
-                                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.02, horizontal: screenWidth * 0.04),
+                                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.02, horizontal: screenWidth * 0.01),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -588,7 +588,7 @@ class AcademicDetailsScreenState extends State<AcademicDetailsScreen> {
                                                   .snapshots(),
                                               builder: (context, snapshot) {
                                                 if (snapshot.connectionState == ConnectionState.waiting) {
-                                                  return Center(child: CircularProgressIndicator());
+                                                  return Center(child: CircularProgressIndicator(color: AcademicDetailsScreen.textColor));
                                                 }
 
                                                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -829,7 +829,7 @@ class AcademicDetailsScreenState extends State<AcademicDetailsScreen> {
                 child: Container(
                   color: Color.fromRGBO(0, 0, 0, 0.5), // Semi-transparent black overlay
                   child: Center(
-                    child: CircularProgressIndicator(), // Centered loader
+                    child: CircularProgressIndicator(color: AcademicDetailsScreen.textColor), // Centered loader
                   ),
                 ),
               ),

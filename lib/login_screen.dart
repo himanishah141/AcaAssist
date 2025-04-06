@@ -92,7 +92,7 @@ class LoginScreenState extends State<LoginScreen> {
               color: Color.fromRGBO(0, 0, 0, 0.5), // Apply opacity
               child: Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                  valueColor: AlwaysStoppedAnimation<Color>(textColor),
                 ),
               ),
             ),

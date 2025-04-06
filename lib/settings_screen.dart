@@ -381,7 +381,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               child: Container(
                 color: Color.fromRGBO(0, 0, 0, 0.5), // Semi-transparent black overlay
                 child: Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(color: SettingsScreen.textColor),
                 ),
               ),
             ),

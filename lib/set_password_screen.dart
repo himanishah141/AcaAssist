@@ -243,7 +243,7 @@ class SetPasswordScreenState extends State<SetPasswordScreen> {
               color: Color.fromRGBO(0, 0, 0, 0.5),
               child: Center(
                 child: CircularProgressIndicator(
-                  color: SetPasswordScreen.primaryColor,
+                  color: SetPasswordScreen.textColor,
                 ),
               ),
             ),

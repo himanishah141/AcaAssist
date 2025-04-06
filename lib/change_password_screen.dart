@@ -337,7 +337,7 @@ class ChangePasswordScreenState extends State<ChangePasswordScreen> {
               color: Color.fromRGBO(0, 0, 0, 0.5),
               child: Center(
                 child: CircularProgressIndicator(
-                  color: ChangePasswordScreen.primaryColor,
+                  color: ChangePasswordScreen.textColor,
                 ),
               ),
             ),

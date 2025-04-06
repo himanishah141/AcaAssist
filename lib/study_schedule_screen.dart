@@ -9,6 +9,7 @@ import 'mic_screen.dart'; // Import MicScreen
 import 'analytics_screen.dart'; // Import AnalyticsScreen
 import 'task_management_screen.dart'; // Import TaskManagementScreen
 import 'academic_details_screen.dart'; // Import AcademicDetailsScreen
+import 'recommend_resources_screen.dart'; // Import RecommendResourcesScreen
 
 class StudyScheduleScreen extends StatefulWidget {
   static const Color backgroundColor = Color(0xFF5C6B7D);
@@ -154,7 +155,10 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
             ),
             // Add the "Edit Subject Details" button
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04, // Adjust horizontal padding dynamically
+                vertical: screenHeight * 0.02, // Adjust vertical padding dynamically
+              ),
               child: ElevatedButton(
                 onPressed: () {
                   // Navigate to AcademicDetailsScreen when pressed
@@ -190,7 +194,51 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.03),
+              // Add the "Recommend Resources" button
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.04, // Adjust horizontal padding dynamically
+                  vertical: screenHeight * 0.02, // Adjust vertical padding dynamically
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigate to RecommendResourcesScreen when pressed
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const RecommendResourcesScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AcademicDetailsScreen.primaryColor, // Button color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      vertical: screenHeight * 0.02, // Responsive vertical padding
+                      horizontal: screenWidth * 0.1, // Responsive horizontal padding
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min, // Prevents stretching and ensures dynamic sizing
+                    children: [
+                      Text(
+                        "Recommend Resources",
+                        style: TextStyle(
+                          color: AcademicDetailsScreen.textColor, // Button text color
+                          fontSize: fontSize * 0.6, // Adjust font size dynamically based on screen width
+                        ),
+                      ),
+                      SizedBox(width: 8), // Space between text and icon
+                      Icon(
+                        Icons.arrow_forward, // Right arrow icon
+                        color: AcademicDetailsScreen.textColor, // Icon color
+                        size: fontSize * 0.6, // Adjust icon size dynamically based on screen width
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            SizedBox(height: screenHeight * 0.03),
               Center(
                 child: Text(
                   'Weekly Timetable',
@@ -226,7 +274,7 @@ class StudyScheduleScreenState extends State<StudyScheduleScreen> {
                               .snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
+                              return Center(child: CircularProgressIndicator(color: StudyScheduleScreen.textColor));
                             }
 
                             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
