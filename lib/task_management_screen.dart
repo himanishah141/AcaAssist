@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+/*import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:http/http.dart' as http;
-import 'package:googleapis_auth/auth_io.dart';
+import 'package:googleapis_auth/auth_io.dart';*/
 import 'profile_screen.dart'; // Import ProfileScreen
 import 'home_screen.dart'; // Import HomeScreen
 import 'settings_screen.dart'; // Import SettingsScreen
@@ -131,7 +131,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     );
   }
 
-  GoogleSignIn googleSignIn = GoogleSignIn(
+ /* GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: <String>[
       'email',
       'https://www.googleapis.com/auth/calendar', // Google Calendar API scope
@@ -215,7 +215,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     } catch (e) {
       _showSnackBar("Error syncing tasks with Google Calendar: $e");
     }
-  }
+  }*/
 
   // Add Tasks
   void _addTask() async {
@@ -281,7 +281,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
         });
 
         // Now check if user is signed in and sync with Google Calendar
-        await _checkGoogleSignInStatus();
+      //  await _checkGoogleSignInStatus();
 
         // Show success SnackBar
         _showSnackBar("Task added successfully!");
@@ -396,7 +396,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
         });
 
         // Now check if user is signed in and sync with Google Calendar
-        await _checkGoogleSignInStatus();
+      //  await _checkGoogleSignInStatus();
 
         // Show success SnackBar after updating the task
         _showSnackBar("Task updated successfully!");
@@ -471,7 +471,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                         .delete();
 
                     // Now check if user is signed in and sync with Google Calendar
-                    await _checkGoogleSignInStatus();
+                  //  await _checkGoogleSignInStatus();
 
                     // Show success SnackBar after deleting the task
                     _showSnackBar("Task deleted successfully!");
