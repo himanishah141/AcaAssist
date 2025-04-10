@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-/*import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:http/http.dart' as http;
-import 'package:googleapis_auth/auth_io.dart';*/
+import 'package:googleapis_auth/auth_io.dart';
 import 'profile_screen.dart'; // Import ProfileScreen
 import 'home_screen.dart'; // Import HomeScreen
 import 'settings_screen.dart'; // Import SettingsScreen
@@ -131,7 +131,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     );
   }
 
- /* GoogleSignIn googleSignIn = GoogleSignIn(
+  GoogleSignIn googleSignIn = GoogleSignIn(
     scopes: <String>[
       'email',
       'https://www.googleapis.com/auth/calendar', // Google Calendar API scope
@@ -146,8 +146,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     bool isSignedIn = await googleSignIn.isSignedIn();
 
     if (isSignedIn) {
-      GoogleSignInAccount? user = googleSignIn.currentUser;
-      _showSnackBar("User is already signed in: ${user?.displayName}");
+      _showSnackBar("User is already signed in.");
 
       // Now, proceed to sync tasks with Google Calendar
       _syncTasksWithGoogleCalendar();
@@ -157,65 +156,114 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     }
   }
 
-// Sign-in method
   Future<void> _handleSignInWithGoogle() async {
     try {
       // Trigger Google Sign-In
-      await googleSignIn.signIn();
+      GoogleSignInAccount? user = await googleSignIn.signIn();
+      if (user == null) {
+        _showSnackBar("Google sign-in failed. Please try again.");
+        return;
+      }
+
       _showSnackBar("User signed in with Google");
 
-      // Now sync tasks with Google Calendar
+      // Once signed in, authenticate and sync tasks with Google Calendar
       _syncTasksWithGoogleCalendar();
     } catch (error) {
       _showSnackBar("Google sign-in error: $error");
     }
   }
 
-  // Sync tasks with Google Calendar
   Future<void> _syncTasksWithGoogleCalendar() async {
     try {
+      // Ensure that the current GoogleSignInAccount is not null
       GoogleSignInAccount? googleAccount = googleSignIn.currentUser;
-      GoogleSignInAuthentication googleAuth = await googleAccount!.authentication;
+      if (googleAccount == null) {
+        _showSnackBar("Google sign-in failed. Please sign in first.");
+        return;
+      }
 
-      // Access Token from Google Sign-In
-      String accessToken = googleAuth.accessToken!;
+      // Authenticate the Google account
+      GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
 
-      // Use the access token to create credentials
+      // Ensure that accessToken is not null
+      String? accessToken = googleAuth.accessToken;
+      if (accessToken == null) {
+        _showSnackBar("Access token is null. Please sign in again.");
+        return;
+      }
+
+      // Create credentials using the access token
       final credentials = AccessCredentials(
         AccessToken('Bearer', accessToken, DateTime.now().add(Duration(hours: 1))),
-        null,  // No refresh token is required here
-        <String>['https://www.googleapis.com/auth/calendar'], // Scopes for Google Calendar API
+        null,  // No refresh token required
+        <String>['https://www.googleapis.com/auth/calendar'],
       );
 
       // Create an authenticated client using the credentials
       final client = authenticatedClient(http.Client(), credentials);
-      _calendarApi = calendar.CalendarApi(client);
 
+      // Ensure _calendarApi is initialized
+      _calendarApi ??= calendar.CalendarApi(client);
+
+      // Now try to fetch the user's task from Firestore
       User? currentUser = _auth.currentUser;
-
-      if (currentUser != null) {
-        var taskDocs = await _firestore
-            .collection('Users')
-            .doc(currentUser.uid)
-            .collection('TaskManagement')
-            .get();
-
-        for (var doc in taskDocs.docs) {
-          var taskData = doc.data();
-          DateTime taskDate = DateTime.parse(taskData['Date']);
-          calendar.Event event = calendar.Event(
-            summary: taskData['SubjectName'],  // Task name (subject name)
-            start: calendar.EventDateTime(dateTime: taskDate, timeZone: "UTC"),
-            end: calendar.EventDateTime(dateTime: taskDate, timeZone: "UTC"),
-          );
-          await _calendarApi!.events.insert(event, 'primary');
-        }
-        _showSnackBar("Tasks synced to Google Calendar.");
+      if (currentUser == null) {
+        _showSnackBar("User is not logged in.");
+        return;
       }
+
+      var taskDocs = await _firestore
+          .collection('Users')
+          .doc(currentUser.uid)
+          .collection('TaskManagement')
+          .get();
+
+      if (taskDocs.docs.isEmpty) {
+        _showSnackBar("No tasks found to sync.");
+        return;
+      }
+
+      // Loop through the tasks and add them to the calendar
+      for (var doc in taskDocs.docs) {
+        var taskData = doc.data();
+
+        // Safely access 'SubjectName' and 'Date', checking for null
+        String? subjectName = taskData['SubjectName'];
+        String? dateString = taskData['Date'];
+
+        if (subjectName == null || dateString == null) {
+          _showSnackBar("Task data is incomplete. Skipping task.");
+          continue;  // Skip this task if required data is missing
+        }
+
+        // Try to parse the date string, and handle potential parsing errors
+        DateTime taskDate;
+        try {
+          taskDate = DateTime.parse(dateString);  // Parsing date
+        } catch (e) {
+          _showSnackBar("Invalid date format for task: $subjectName");
+          continue;  // Skip this task if the date is invalid
+        }
+
+        // Create a new calendar event
+        calendar.Event event = calendar.Event(
+          summary: subjectName,  // Task name (subject name)
+          start: calendar.EventDateTime(dateTime: taskDate, timeZone: "UTC"),
+          end: calendar.EventDateTime(dateTime: taskDate, timeZone: "UTC"),
+        );
+
+        // Insert the event into Google Calendar
+        await _calendarApi!.events.insert(event, 'primary');
+      }
+
+      _showSnackBar("Tasks synced to Google Calendar.");
+
     } catch (e) {
       _showSnackBar("Error syncing tasks with Google Calendar: $e");
     }
-  }*/
+  }
+
 
   // Add Tasks
   void _addTask() async {
@@ -281,7 +329,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
         });
 
         // Now check if user is signed in and sync with Google Calendar
-      //  await _checkGoogleSignInStatus();
+        await _checkGoogleSignInStatus();
 
         // Show success SnackBar
         _showSnackBar("Task added successfully!");
@@ -396,7 +444,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
         });
 
         // Now check if user is signed in and sync with Google Calendar
-      //  await _checkGoogleSignInStatus();
+        await _checkGoogleSignInStatus();
 
         // Show success SnackBar after updating the task
         _showSnackBar("Task updated successfully!");
@@ -471,7 +519,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                         .delete();
 
                     // Now check if user is signed in and sync with Google Calendar
-                  //  await _checkGoogleSignInStatus();
+                    await _checkGoogleSignInStatus();
 
                     // Show success SnackBar after deleting the task
                     _showSnackBar("Task deleted successfully!");
@@ -812,6 +860,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                             ),
                           ),
                         ),
+                        SizedBox(height: screenHeight * 0.02),
                       ],
                     ),
                   )
