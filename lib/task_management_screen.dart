@@ -35,7 +35,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
   DateTime? selectedDate;
   DateTime? selectedDueDate;
   bool _isStatusEditable = false; // Track if the status dropdown is editable
-  final bool _isFieldsEditable = true; // Controls if dropdowns and date picker should be editable
+  bool _isFieldsEditable = true; // Controls if dropdowns and date picker should be editable
 
   String? _editingTaskId;
   bool _isEditing = false;  // Tracks if editing mode is active
@@ -218,61 +218,67 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     }
   }
 
-  // In the _editTask method
   void _editTask(String taskId, String taskType, String subjectName, String status, String date) {
-    // Show confirmation dialog if the status is Missing or Completed
-    if (status == 'Missing' || status == 'Completed') {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: TaskManagementScreen.backgroundColor,
-            title: Text('Confirm Edit', style: TextStyle(color: TaskManagementScreen.textColor)),
-            content: Text('This task is marked as $status. Do you want to proceed with editing?', style: TextStyle(color: TaskManagementScreen.textColor)),
-            actions: [
-              TextButton(
-                child: Text('Cancel', style: TextStyle(color: TaskManagementScreen.textColor)),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-              ),
-              TextButton(
-                child: Text('Confirm', style: TextStyle(color: TaskManagementScreen.textColor)),
-                onPressed: () {
-                  setState(() {
-                    _isEditing = true;
-                    _editingTaskId = taskId;
-                    _selectedTask = taskType;
-                    _selectedSubject = subjectName;
-                    _selectedStatus = status; // Keep the original status
+    // Show confirmation dialog for every task
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: TaskManagementScreen.backgroundColor,
+          title: Text('Confirm Edit', style: TextStyle(color: TaskManagementScreen.textColor)),
+          content: Text('Are you sure you want to edit this task?', style: TextStyle(color: TaskManagementScreen.textColor)),
+          actions: [
+            TextButton(
+              child: Text('Cancel', style: TextStyle(color: TaskManagementScreen.textColor)),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Confirm', style: TextStyle(color: TaskManagementScreen.textColor)),
+              onPressed: () {
+                _applyEditChanges(taskId, taskType, subjectName, status, date);
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-                    // Disable all fields except status
-                    _isStatusEditable = (taskType == 'Assignment' && status == 'Missing');
-                    selectedDate = DateTime.tryParse(date);
-                    selectedDueDate = (taskType == 'Assignment') ? null : DateTime.tryParse(date);
-                  });
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      // Proceed with normal editing flow
-      setState(() {
-        _isEditing = true;
-        _editingTaskId = taskId;
-        _selectedTask = taskType;
-        _selectedSubject = subjectName;
-        _selectedStatus = status; // Keep the original status
 
-        // Disable all fields except status if status is Missing or Completed
-        _isStatusEditable = (taskType == 'Assignment' && status == 'Missing');
-        selectedDate = DateTime.tryParse(date);
-        selectedDueDate = (taskType == 'Assignment') ? null : DateTime.tryParse(date);
-      });
-    }
+  void _applyEditChanges(String taskId, String taskType, String subjectName, String status, String date) {
+    setState(() {
+      _isEditing = true;
+      _editingTaskId = taskId;
+      _selectedTask = taskType;
+      _selectedSubject = subjectName;
+      _selectedStatus = status; // Set the selected status correctly
+
+      // Set the date based on task type
+      if (taskType == 'Exam') {
+        selectedDate = DateTime.tryParse(date); // Set exam date
+      } else {
+        selectedDueDate = DateTime.tryParse(date); // Set assignment due date
+      }
+
+      // Lock all fields if it's a 'Missing' or 'Done Late' assignment
+      if (taskType == 'Assignment' && status == 'Missing') {
+        _isFieldsEditable = false;
+        _isStatusEditable = true;
+        _showSnackBar("This task is marked as Missing. You can only update the status.");
+      }
+      else if(taskType == 'Assignment' && status == 'Done Late'){
+        _isFieldsEditable = false;
+        _isStatusEditable = true;
+        _showSnackBar("This task is marked as Done Late. You can only update the status.");
+      }
+      else {
+        _isFieldsEditable = true;
+        _isStatusEditable = true;
+      }
+    });
   }
 
   Future<void> _updateTask() async {
@@ -280,6 +286,8 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     final subjectName = _selectedSubject;  // SubjectName from dropdown
     final date = _selectedTask == 'Exam' ? selectedDate : selectedDueDate;
     final status = _selectedStatus;  // Status from dropdown
+    _isStatusEditable = true; // Track if the status dropdown is editable
+    _isFieldsEditable = true; // Controls if dropdowns and date picker should be editable
 
     // Validate the inputs
     if (taskType == null) {
@@ -559,6 +567,21 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                                             };
                                           }).toList();
 
+                                          // Define custom status order
+                                          const statusPriority = {
+                                            'Pending': 0,
+                                            'Completed': 1,
+                                            'Done Late': 2,
+                                            'Missing': 3,
+                                          };
+
+                                          // Sort the tasks based on status
+                                          tasks.sort((a, b) {
+                                            final aPriority = statusPriority[a['Status']] ?? 999; // Use default priority for unknown statuses
+                                            final bPriority = statusPriority[b['Status']] ?? 999;
+                                            return aPriority.compareTo(bPriority); // Sort by priority
+                                          });
+
                                           return Scrollbar( // Horizontal scrollbar
                                             controller: ScrollController(), // Make the horizontal scrollbar always visible
                                             child: SingleChildScrollView(
@@ -650,18 +673,34 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                                                   ),
                                                 ],
                                                 rows: tasks.map((task) {
-                                                  // Convert date string to DateTime
                                                   DateTime taskDate = DateTime.parse(task['Date']);
                                                   final now = DateTime.now();
                                                   String taskStatus = task['Status'];
 
-                                                  // Update status to 'Missing' only for assignments if date has passed and status is still 'Pending'
-                                                  if (task['TaskType'] == 'Assignment' && taskStatus == 'Pending' && taskDate.isBefore(now)) {
-                                                    taskStatus = 'Missing'; // Update status to 'Missing' only for assignments
+                                                  // Convert to date-only for accurate comparison
+                                                  DateTime nowDateOnly = DateTime(now.year, now.month, now.day);
+                                                  DateTime dueDateLimit = DateTime(taskDate.year, taskDate.month, taskDate.day + 1); // due date + 1 day at 00:00
+
+                                                  // Assignments: Mark as 'Missing' after the grace period
+                                                  if (task['TaskType'] == 'Assignment' && taskStatus == 'Pending' && nowDateOnly.isAfter(dueDateLimit)) {
+                                                    taskStatus = 'Missing';
+                                                    _firestore
+                                                        .collection('Users')
+                                                        .doc(_auth.currentUser?.uid)
+                                                        .collection('TaskManagement')
+                                                        .doc(task['TaskId'])
+                                                        .update({'Status': 'Missing'});
                                                   }
-                                                  // Update status to 'Completed' for exams if the date has passed
-                                                  if (task['TaskType'] == 'Exam' && task['Status'] == 'Pending' && DateTime.parse(task['Date']).isBefore(DateTime.now())) {
-                                                    taskStatus = 'Completed'; // Change status to 'Completed' for exams that are past due
+
+                                                  // Exams: Mark as 'Completed' after the grace period
+                                                  if (task['TaskType'] == 'Exam' && taskStatus == 'Pending' && nowDateOnly.isAfter(dueDateLimit)) {
+                                                    taskStatus = 'Completed';
+                                                    _firestore
+                                                        .collection('Users')
+                                                        .doc(_auth.currentUser?.uid)
+                                                        .collection('TaskManagement')
+                                                        .doc(task['TaskId'])
+                                                        .update({'Status': 'Completed'});
                                                   }
 
                                                   return DataRow(cells: [
@@ -720,8 +759,6 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                                                               // Show a more user-friendly Snackbar when task is "Exam" and status is "Completed"
                                                               _showSnackBar("This exam has already been completed. You cannot edit it anymore.");
                                                             } else if (task['Status'] == 'Missing') {
-                                                              // Show SnackBar when task is "Missing" but allow status update
-                                                              _showSnackBar("This task is marked as 'Missing'. You can only update the status.");
                                                               _editTask(task['TaskId'], task['TaskType'], task['SubjectName'], task['Status'], task['Date']);
                                                             } else {
                                                               // If status is not "Missing" or "Completed", allow full editing of the task
@@ -984,6 +1021,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                           value,
                           style: TextStyle(
                             fontSize: constraints.maxWidth * 0.04,
+                            color: TaskManagementScreen.textColor,
                           ),
                         ),
                       );
@@ -1040,6 +1078,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                     value,
                     style: TextStyle(
                       fontSize: constraints.maxWidth * 0.04,
+                      color: TaskManagementScreen.textColor,
                     ),
                   ),
                 );
@@ -1057,22 +1096,30 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     );
   }
 
-  // In the _buildDropdownStatus method
   Widget _buildDropdownStatus() {
     return LayoutBuilder(
       builder: (context, constraints) {
         double inputHeight = constraints.maxWidth * 0.12;
 
-        // Dynamically determine status options based on the task type and current status
+        // Determine status options based on current status and task type
         List<String> statusOptions;
+
         if (_selectedTask == 'Assignment') {
-          if (_selectedStatus == 'Missing') {
-            statusOptions = ['Done Late']; // Only allow Done Late for Missing assignments
+          // If the current status is "Missing", show "Missing" and "Done Late"
+          if (_selectedStatus == 'Missing' || _selectedStatus == 'Done Late') {
+            statusOptions = ['Missing', 'Done Late'];
           } else {
-            statusOptions = ['Pending', 'Completed', 'Missing']; // Include Missing for assignments
+            // Default options for assignments
+            statusOptions = ['Pending', 'Completed'];
           }
         } else {
-          statusOptions = ['Pending', 'Completed']; // Regular options for exams
+          // Default options for exams
+          statusOptions = ['Pending', 'Completed'];
+        }
+
+        // Ensure the selected status is in the list of options
+        if (_selectedStatus != null && !statusOptions.contains(_selectedStatus)) {
+          _selectedStatus = null; // Reset if invalid
         }
 
         return Container(
@@ -1090,9 +1137,9 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
               style: TextStyle(color: TaskManagementScreen.textColor),
               onChanged: _isStatusEditable ? (String? newValue) {
                 setState(() {
-                  _selectedStatus = newValue; // Update status only if editable
+                  _selectedStatus = newValue; // Update the selected status
                 });
-              } : null, // Disable interaction when status is not editable
+              } : null,
               items: statusOptions.map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
