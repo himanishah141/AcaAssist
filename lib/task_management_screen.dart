@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/calendar/v3.dart' as calendar;
-import 'package:http/http.dart' as http;
-import 'package:googleapis_auth/auth_io.dart';
 import 'profile_screen.dart'; // Import ProfileScreen
 import 'home_screen.dart'; // Import HomeScreen
 import 'settings_screen.dart'; // Import SettingsScreen
@@ -38,6 +34,8 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
   String? selectedStatus;
   DateTime? selectedDate;
   DateTime? selectedDueDate;
+  bool _isStatusEditable = false; // Track if the status dropdown is editable
+  final bool _isFieldsEditable = true; // Controls if dropdowns and date picker should be editable
 
   String? _editingTaskId;
   bool _isEditing = false;  // Tracks if editing mode is active
@@ -45,7 +43,10 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchUserData();
+    _fetchUserData().then((_) {
+      // Call the status update function after user data is fetched
+      _updateStatusBasedOnDueDate();
+    });
   }
 
   Future<void> _fetchUserData() async {
@@ -77,24 +78,29 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     return ''; // Return empty string if no date is selected
   }
 
-  // Function to open date picker
   Future<void> _selectDate(BuildContext context, bool isExam) async {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day); // Strip time for consistency
+
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: isExam ? DateTime.now() : DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      firstDate: today,
+      lastDate: DateTime(now.year + 5),
     );
+
     if (picked != null) {
       setState(() {
         if (isExam) {
-          selectedDate = picked; // Update selected exam date
+          selectedDate = picked;
         } else {
-          selectedDueDate = picked; // Update selected assignment due date
+          selectedDueDate = picked;
         }
       });
+      _updateStatusBasedOnDueDate(); // Re-check if it should be marked as "Missing"
     }
   }
+
 
   // Dynamically adjust icon size based on screen width
   double getIconSize(BuildContext context) {
@@ -130,140 +136,6 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
       ),
     );
   }
-
-  GoogleSignIn googleSignIn = GoogleSignIn(
-    scopes: <String>[
-      'email',
-      'https://www.googleapis.com/auth/calendar', // Google Calendar API scope
-    ],
-  );
-
-// Google Calendar API client
-  calendar.CalendarApi? _calendarApi;
-
-// Google Sign-In status check
-  Future<void> _checkGoogleSignInStatus() async {
-    bool isSignedIn = await googleSignIn.isSignedIn();
-
-    if (isSignedIn) {
-      _showSnackBar("User is already signed in.");
-
-      // Now, proceed to sync tasks with Google Calendar
-      _syncTasksWithGoogleCalendar();
-    } else {
-      // If the user is not signed in, show the sign-in prompt
-      _handleSignInWithGoogle();
-    }
-  }
-
-  Future<void> _handleSignInWithGoogle() async {
-    try {
-      // Trigger Google Sign-In
-      GoogleSignInAccount? user = await googleSignIn.signIn();
-      if (user == null) {
-        _showSnackBar("Google sign-in failed. Please try again.");
-        return;
-      }
-
-      _showSnackBar("User signed in with Google");
-
-      // Once signed in, authenticate and sync tasks with Google Calendar
-      _syncTasksWithGoogleCalendar();
-    } catch (error) {
-      _showSnackBar("Google sign-in error: $error");
-    }
-  }
-
-  Future<void> _syncTasksWithGoogleCalendar() async {
-    try {
-      // Ensure that the current GoogleSignInAccount is not null
-      GoogleSignInAccount? googleAccount = googleSignIn.currentUser;
-      if (googleAccount == null) {
-        _showSnackBar("Google sign-in failed. Please sign in first.");
-        return;
-      }
-
-      // Authenticate the Google account
-      GoogleSignInAuthentication googleAuth = await googleAccount.authentication;
-
-      // Ensure that accessToken is not null
-      String? accessToken = googleAuth.accessToken;
-      if (accessToken == null) {
-        _showSnackBar("Access token is null. Please sign in again.");
-        return;
-      }
-
-      // Create credentials using the access token
-      final credentials = AccessCredentials(
-        AccessToken('Bearer', accessToken, DateTime.now().add(Duration(hours: 1))),
-        null,  // No refresh token required
-        <String>['https://www.googleapis.com/auth/calendar'],
-      );
-
-      // Create an authenticated client using the credentials
-      final client = authenticatedClient(http.Client(), credentials);
-
-      // Ensure _calendarApi is initialized
-      _calendarApi ??= calendar.CalendarApi(client);
-
-      // Now try to fetch the user's task from Firestore
-      User? currentUser = _auth.currentUser;
-      if (currentUser == null) {
-        _showSnackBar("User is not logged in.");
-        return;
-      }
-
-      var taskDocs = await _firestore
-          .collection('Users')
-          .doc(currentUser.uid)
-          .collection('TaskManagement')
-          .get();
-
-      if (taskDocs.docs.isEmpty) {
-        _showSnackBar("No tasks found to sync.");
-        return;
-      }
-
-      // Loop through the tasks and add them to the calendar
-      for (var doc in taskDocs.docs) {
-        var taskData = doc.data();
-
-        // Safely access 'SubjectName' and 'Date', checking for null
-        String? subjectName = taskData['SubjectName'];
-        String? dateString = taskData['Date'];
-
-        if (subjectName == null || dateString == null) {
-          _showSnackBar("Task data is incomplete. Skipping task.");
-          continue;  // Skip this task if required data is missing
-        }
-
-        // Try to parse the date string, and handle potential parsing errors
-        DateTime taskDate;
-        try {
-          taskDate = DateTime.parse(dateString);  // Parsing date
-        } catch (e) {
-          _showSnackBar("Invalid date format for task: $subjectName");
-          continue;  // Skip this task if the date is invalid
-        }
-
-        // Create a new calendar event
-        calendar.Event event = calendar.Event(
-          summary: subjectName,  // Task name (subject name)
-          start: calendar.EventDateTime(dateTime: taskDate, timeZone: "UTC"),
-          end: calendar.EventDateTime(dateTime: taskDate, timeZone: "UTC"),
-        );
-
-        // Insert the event into Google Calendar
-        await _calendarApi!.events.insert(event, 'primary');
-      }
-
-      _showSnackBar("Tasks synced to Google Calendar.");
-
-    } catch (e) {
-      _showSnackBar("Error syncing tasks with Google Calendar: $e");
-    }
-  }
-
 
   // Add Tasks
   void _addTask() async {
@@ -328,9 +200,6 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
           'TaskId': taskId,
         });
 
-        // Now check if user is signed in and sync with Google Calendar
-        await _checkGoogleSignInStatus();
-
         // Show success SnackBar
         _showSnackBar("Task added successfully!");
 
@@ -349,54 +218,61 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
     }
   }
 
+  // In the _editTask method
   void _editTask(String taskId, String taskType, String subjectName, String status, String date) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: TaskManagementScreen.backgroundColor,
-          title: Text(
-            'Edit Task',
-            style: TextStyle(color: TaskManagementScreen.textColor),
-          ),
-          content: Text(
-            'Are you sure you want to edit this task?',
-            style: TextStyle(color: TaskManagementScreen.textColor),
-          ),
-          actions: [
-            TextButton(
+    // Show confirmation dialog if the status is Missing or Completed
+    if (status == 'Missing' || status == 'Completed') {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: TaskManagementScreen.backgroundColor,
+            title: Text('Confirm Edit', style: TextStyle(color: TaskManagementScreen.textColor)),
+            content: Text('This task is marked as $status. Do you want to proceed with editing?', style: TextStyle(color: TaskManagementScreen.textColor)),
+            actions: [
+              TextButton(
                 child: Text('Cancel', style: TextStyle(color: TaskManagementScreen.textColor)),
                 onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+              ),
+              TextButton(
+                child: Text('Confirm', style: TextStyle(color: TaskManagementScreen.textColor)),
+                onPressed: () {
                   setState(() {
-                    _isEditing = false; // Set to false if cancel is pressed
+                    _isEditing = true;
+                    _editingTaskId = taskId;
+                    _selectedTask = taskType;
+                    _selectedSubject = subjectName;
+                    _selectedStatus = status; // Keep the original status
+
+                    // Disable all fields except status
+                    _isStatusEditable = (taskType == 'Assignment' && status == 'Missing');
+                    selectedDate = DateTime.tryParse(date);
+                    selectedDueDate = (taskType == 'Assignment') ? null : DateTime.tryParse(date);
                   });
-                  Navigator.of(context).pop();
-                }
-            ),
-            TextButton(
-              child: Text('Confirm', style: TextStyle(color: TaskManagementScreen.textColor)),
-              onPressed: () {
-                setState(() {
-                  _isEditing = true;
-                  _editingTaskId = taskId;
-                  _selectedTask = taskType;
-                  _selectedSubject = subjectName;
-                  _selectedStatus = ['Pending', 'Completed'].contains(status) ? status : null;
-                  if (taskType == 'Exam') {
-                    selectedDate = DateTime.tryParse(date);  // Use DateTime.parse to handle the date properly
-                    selectedDueDate = null;  // Reset Assignment date
-                  } else if (taskType == 'Assignment') {
-                    selectedDueDate = DateTime.tryParse(date); // Handle Assignment date
-                    selectedDate = null; // Reset Exam date
-                  }
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Proceed with normal editing flow
+      setState(() {
+        _isEditing = true;
+        _editingTaskId = taskId;
+        _selectedTask = taskType;
+        _selectedSubject = subjectName;
+        _selectedStatus = status; // Keep the original status
+
+        // Disable all fields except status if status is Missing or Completed
+        _isStatusEditable = (taskType == 'Assignment' && status == 'Missing');
+        selectedDate = DateTime.tryParse(date);
+        selectedDueDate = (taskType == 'Assignment') ? null : DateTime.tryParse(date);
+      });
+    }
   }
 
   Future<void> _updateTask() async {
@@ -442,9 +318,6 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
           'Date': formattedDate,  // Store the formatted date in Firestore
           'Status': status,
         });
-
-        // Now check if user is signed in and sync with Google Calendar
-        await _checkGoogleSignInStatus();
 
         // Show success SnackBar after updating the task
         _showSnackBar("Task updated successfully!");
@@ -518,11 +391,9 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                         .doc(taskId)
                         .delete();
 
-                    // Now check if user is signed in and sync with Google Calendar
-                    await _checkGoogleSignInStatus();
-
                     // Show success SnackBar after deleting the task
                     _showSnackBar("Task deleted successfully!");
+
                   } else {
                     _showSnackBar("User is not logged in.");
                   }
@@ -778,76 +649,100 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                                                     ),
                                                   ),
                                                 ],
-                                                rows: tasks
-                                                    .map((task) => DataRow(cells: [
-                                                  DataCell(
-                                                    Align(
-                                                      alignment: Alignment.centerLeft,
-                                                      child: Text(
-                                                        task['TaskType'],
-                                                        style: TextStyle(
-                                                          color: TaskManagementScreen.textColor,
-                                                          fontSize: fontSize2 * 1.1,
+                                                rows: tasks.map((task) {
+                                                  // Convert date string to DateTime
+                                                  DateTime taskDate = DateTime.parse(task['Date']);
+                                                  final now = DateTime.now();
+                                                  String taskStatus = task['Status'];
+
+                                                  // Update status to 'Missing' only for assignments if date has passed and status is still 'Pending'
+                                                  if (task['TaskType'] == 'Assignment' && taskStatus == 'Pending' && taskDate.isBefore(now)) {
+                                                    taskStatus = 'Missing'; // Update status to 'Missing' only for assignments
+                                                  }
+                                                  // Update status to 'Completed' for exams if the date has passed
+                                                  if (task['TaskType'] == 'Exam' && task['Status'] == 'Pending' && DateTime.parse(task['Date']).isBefore(DateTime.now())) {
+                                                    taskStatus = 'Completed'; // Change status to 'Completed' for exams that are past due
+                                                  }
+
+                                                  return DataRow(cells: [
+                                                    DataCell(
+                                                      Align(
+                                                        alignment: Alignment.centerLeft,
+                                                        child: Text(
+                                                          task['TaskType'],
+                                                          style: TextStyle(
+                                                            color: TaskManagementScreen.textColor,
+                                                            fontSize: fontSize2 * 1.1,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  DataCell(
-                                                    Align(
-                                                      alignment: Alignment.centerLeft,
-                                                      child: Text(
-                                                        task['SubjectName'],
-                                                        style: TextStyle(
-                                                          color: TaskManagementScreen.textColor,
-                                                          fontSize: fontSize2 * 1.1,
+                                                    DataCell(
+                                                      Align(
+                                                        alignment: Alignment.centerLeft,
+                                                        child: Text(
+                                                          task['SubjectName'],
+                                                          style: TextStyle(
+                                                            color: TaskManagementScreen.textColor,
+                                                            fontSize: fontSize2 * 1.1,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        task['Date'].toString(),
-                                                        style: TextStyle(
-                                                          color: TaskManagementScreen.textColor,
-                                                          fontSize: fontSize2 * 1.1,
+                                                    DataCell(
+                                                      Center(
+                                                        child: Text(
+                                                          task['Date'].toString(),
+                                                          style: TextStyle(
+                                                            color: TaskManagementScreen.textColor,
+                                                            fontSize: fontSize2 * 1.1,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        task['Status'],
-                                                        style: TextStyle(
-                                                          color: TaskManagementScreen.textColor,
-                                                          fontSize: fontSize2 * 1.1,
+                                                    DataCell(
+                                                      Center(
+                                                        child: Text(
+                                                          taskStatus,
+                                                          style: TextStyle(
+                                                            color: TaskManagementScreen.textColor,
+                                                            fontSize: fontSize2 * 1.1,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: IconButton(
-                                                        icon: Icon(Icons.edit, color: TaskManagementScreen.textColor),
-                                                        onPressed: () {
-                                                          _editTask(task['TaskId'], task['TaskType'], task['SubjectName'], task['Status'], task['Date']);
-                                                        },
+                                                    DataCell(
+                                                      Center(
+                                                        child: IconButton(
+                                                          icon: Icon(Icons.edit, color: TaskManagementScreen.textColor),
+                                                          onPressed: () {
+                                                            if (task['TaskType'] == 'Exam' && task['Status'] == 'Completed') {
+                                                              // Show a more user-friendly Snackbar when task is "Exam" and status is "Completed"
+                                                              _showSnackBar("This exam has already been completed. You cannot edit it anymore.");
+                                                            } else if (task['Status'] == 'Missing') {
+                                                              // Show SnackBar when task is "Missing" but allow status update
+                                                              _showSnackBar("This task is marked as 'Missing'. You can only update the status.");
+                                                              _editTask(task['TaskId'], task['TaskType'], task['SubjectName'], task['Status'], task['Date']);
+                                                            } else {
+                                                              // If status is not "Missing" or "Completed", allow full editing of the task
+                                                              _editTask(task['TaskId'], task['TaskType'], task['SubjectName'], task['Status'], task['Date']);
+                                                            }
+                                                          },
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: IconButton(
-                                                        icon: Icon(Icons.delete, color: TaskManagementScreen.textColor),
-                                                        onPressed: () {
-                                                          _deleteTask(task['TaskId']);
-                                                        },
+                                                    DataCell(
+                                                      Center(
+                                                        child: IconButton(
+                                                          icon: Icon(Icons.delete, color: TaskManagementScreen.textColor),
+                                                          onPressed: () {
+                                                            _deleteTask(task['TaskId']);
+                                                          },
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ]))
-                                                    .toList(),
+                                                  ]);
+                                                }).toList(),
                                               ),
                                             ),
                                           );
@@ -1074,11 +969,13 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                     ),
                     isExpanded: true,
                     style: TextStyle(color: TaskManagementScreen.textColor),
-                    onChanged: (String? newValue) {
+                    onChanged: _isFieldsEditable
+                        ? (String? newValue) {
                       setState(() {
                         _selectedSubject = newValue;
                       });
-                    },
+                    }
+                        : null,
                     items: subjects
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
@@ -1128,11 +1025,13 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
               ),
               isExpanded: true,
               style: TextStyle(color: TaskManagementScreen.textColor),
-              onChanged: (String? newValue) {
+              onChanged: _isFieldsEditable
+                  ? (String? newValue) {
                 setState(() {
-                  _selectedTask = newValue; // Update state when selection changes
+                  _selectedTask = newValue;
                 });
-              },
+              }
+                  : null,
               items: <String>['Exam', 'Assignment']
                   .map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
@@ -1157,10 +1056,24 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
       },
     );
   }
+
+  // In the _buildDropdownStatus method
   Widget _buildDropdownStatus() {
     return LayoutBuilder(
       builder: (context, constraints) {
         double inputHeight = constraints.maxWidth * 0.12;
+
+        // Dynamically determine status options based on the task type and current status
+        List<String> statusOptions;
+        if (_selectedTask == 'Assignment') {
+          if (_selectedStatus == 'Missing') {
+            statusOptions = ['Done Late']; // Only allow Done Late for Missing assignments
+          } else {
+            statusOptions = ['Pending', 'Completed', 'Missing']; // Include Missing for assignments
+          }
+        } else {
+          statusOptions = ['Pending', 'Completed']; // Regular options for exams
+        }
 
         return Container(
           height: inputHeight,
@@ -1171,37 +1084,22 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: DropdownButton<String>(
-              value: ['Pending', 'Completed'].contains(_selectedStatus) ? _selectedStatus : null,
-              hint: Text(
-                'Select status',
-                style: TextStyle(
-                  color: TaskManagementScreen.textColor,
-                  fontSize: constraints.maxWidth * 0.04,
-                ),
-              ),
+              value: _selectedStatus,
+              hint: Text('Select status', style: TextStyle(color: TaskManagementScreen.textColor)),
               isExpanded: true,
               style: TextStyle(color: TaskManagementScreen.textColor),
-              onChanged: (String? newValue) {
+              onChanged: _isStatusEditable ? (String? newValue) {
                 setState(() {
-                  _selectedStatus = newValue; // Update state when selection changes
+                  _selectedStatus = newValue; // Update status only if editable
                 });
-              },
-              items: <String>['Pending', 'Completed']
-                  .map<DropdownMenuItem<String>>((String value) {
+              } : null, // Disable interaction when status is not editable
+              items: statusOptions.map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: constraints.maxWidth * 0.04,
-                    ),
-                  ),
+                  child: Text(value, style: TextStyle(fontSize: constraints.maxWidth * 0.04)),
                 );
               }).toList(),
-              icon: Icon(
-                Icons.arrow_drop_down,
-                color: TaskManagementScreen.textColor,
-              ),
+              icon: Icon(Icons.arrow_drop_down, color: TaskManagementScreen.textColor),
               underline: SizedBox.shrink(),
               dropdownColor: TaskManagementScreen.primaryColor,
             ),
@@ -1227,13 +1125,15 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
 
             // Date Picker
             GestureDetector(
-              onTap: () {
+              onTap: _isFieldsEditable
+                  ? () {
                 if (_selectedTask == 'Exam') {
-                  _selectDate(context, true); // Open date picker for Exam
+                  _selectDate(context, true);
                 } else if (_selectedTask == 'Assignment') {
-                  _selectDate(context, false); // Open date picker for Assignment
+                  _selectDate(context, false);
                 }
-              },
+              }
+                  : null,
               child: Container(
                 height: fontSize * 3.2, // Adjust height based on font size
                 decoration: BoxDecoration(
@@ -1273,5 +1173,55 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
         );
       },
     );
+  }
+
+  Future<void> _updateStatusBasedOnDueDate() async {
+    if (_selectedTask == 'Assignment' && selectedDueDate != null) {
+      final now = DateTime.now();
+
+      // If the task is "Pending" and the due date has passed, change the status to "Missing"
+      if (_selectedStatus == 'Pending' && selectedDueDate!.isBefore(now)) {
+        setState(() {
+          _selectedStatus = 'Missing'; // Update local state
+        });
+
+        User? currentUser  = _auth.currentUser ;
+        if (currentUser  != null) {
+          try {
+            await _firestore
+                .collection('Users')
+                .doc(currentUser .uid)
+                .collection('TaskManagement')
+                .doc(_editingTaskId) // Ensure this is set correctly
+                .update({'Status': 'Missing'}); // Update Firestore
+          } catch (e) {
+            // Handle error if needed
+          }
+        }
+      }
+    } else if (_selectedTask == 'Exam' && selectedDate != null) {
+      final now = DateTime.now();
+
+      // If the task is "Pending" and the exam date has passed, change the status to "Completed"
+      if (_selectedStatus == 'Pending' && selectedDate!.isBefore(now)) {
+        setState(() {
+          _selectedStatus = 'Completed'; // Update local state
+        });
+
+        User? currentUser  = _auth.currentUser ;
+        if (currentUser  != null) {
+          try {
+            await _firestore
+                .collection('Users')
+                .doc(currentUser .uid)
+                .collection('TaskManagement')
+                .doc(_editingTaskId) // Ensure this is set correctly
+                .update({'Status': 'Completed'}); // Update Firestore
+          } catch (e) {
+            // Handle error if needed
+          }
+        }
+      }
+    }
   }
 }
