@@ -232,21 +232,35 @@ class HomeScreenState extends State<HomeScreen> {
                                       return Center(child: CircularProgressIndicator(color: HomeScreen.textColor));
                                     } else if (snapshot.hasError) {
                                       return Center(child: Text("Something went wrong", style: TextStyle(color: HomeScreen.textColor)));
-                                    } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                                      // Fetching study plan and tasks
+                                    } else {
+                                      // Fetch the data and trim it
                                       String studyPlan = snapshot.data![0].trim();
                                       String tasks = snapshot.data![1].trim();
 
-                                      // Splitting tasks by newlines to create a list of tasks
+                                      // Split the data into lists
+                                      List<String> studyPlanList = studyPlan.isNotEmpty ? studyPlan.split('\n') : [];
                                       List<String> taskList = tasks.isNotEmpty ? tasks.split('\n') : [];
 
-                                      // Splitting study plan by newlines to create a list of study plan items
-                                      List<String> studyPlanList = studyPlan.isNotEmpty ? studyPlan.split('\n') : [];
+                                      // Check if both study plan and tasks are empty
+                                      if (studyPlanList.isEmpty && taskList.isEmpty) {
+                                        return Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 16),
+                                          child: Text(
+                                            "Nothing to show",  // If both are empty, display this message
+                                            style: TextStyle(
+                                              color: HomeScreen.textColor,
+                                              fontSize: fontSize2,  // Default font size for content
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            textAlign: TextAlign.start,
+                                          ),
+                                        );
+                                      }
 
                                       return Padding(
                                         padding: EdgeInsets.symmetric(vertical: 16),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,  // Align everything to start (left-aligned)
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             // Display "Today's Study Plan" if it's not empty
                                             if (studyPlanList.isNotEmpty) ...[
@@ -254,28 +268,27 @@ class HomeScreenState extends State<HomeScreen> {
                                                 "📅 Today's Study Plan:",  // Static header for "Today's Study Plan"
                                                 style: TextStyle(
                                                   color: HomeScreen.textColor,
-                                                  fontSize: fontSize2 * 1.3, // Dynamically set font size here
+                                                  fontSize: fontSize2 * 1.3, // Dynamically set font size
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                                 textAlign: TextAlign.start,  // Align text to the start
                                               ),
                                               SizedBox(height: 8),
-                                              // Display each study plan line with bullet points
                                               Padding(
                                                 padding: EdgeInsets.symmetric(vertical: 16),
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,  // Ensure study plan is left-aligned
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: studyPlanList.map((studyPlanItem) {
                                                     return Padding(
                                                       padding: const EdgeInsets.only(bottom: 8.0),
                                                       child: Text(
-                                                        "• $studyPlanItem",  // Add the bullet point before each study plan item
+                                                        "• $studyPlanItem",  // Add the bullet point before each item
                                                         style: TextStyle(
                                                           color: HomeScreen.textColor,
-                                                          fontSize: fontSize2 * 1.2,  // Default font size for study plan content
+                                                          fontSize: fontSize2 * 1.2,  // Default font size
                                                           fontWeight: FontWeight.w600,
                                                         ),
-                                                        textAlign: TextAlign.start,  // Align text to the start
+                                                        textAlign: TextAlign.start,
                                                       ),
                                                     );
                                                   }).toList(),
@@ -283,23 +296,22 @@ class HomeScreenState extends State<HomeScreen> {
                                               ),
                                             ],
 
-                                            // Now we add the "📝 Today's Tasks" heading with dynamic font size
+                                            // Display "Today's Tasks" if it's not empty
                                             if (taskList.isNotEmpty) ...[
                                               Text(
                                                 "📝 Today's Tasks:",  // Static header for "Today's Tasks"
                                                 style: TextStyle(
                                                   color: HomeScreen.textColor,
-                                                  fontSize: fontSize2 * 1.3, // Dynamically set font size here for tasks header
+                                                  fontSize: fontSize2 * 1.3,  // Dynamically set font size for tasks header
                                                   fontWeight: FontWeight.bold,
                                                 ),
-                                                textAlign: TextAlign.start,  // Align text to the start
+                                                textAlign: TextAlign.start,
                                               ),
                                               SizedBox(height: 8),
-                                              // Display each task line with bullet points
                                               Padding(
                                                 padding: EdgeInsets.symmetric(vertical: 16),
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,  // Ensure tasks are left-aligned
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: taskList.map((task) {
                                                     return Padding(
                                                       padding: const EdgeInsets.only(bottom: 8.0),
@@ -310,7 +322,7 @@ class HomeScreenState extends State<HomeScreen> {
                                                           fontSize: fontSize2 * 1.2,  // Default font size for task content
                                                           fontWeight: FontWeight.w600,
                                                         ),
-                                                        textAlign: TextAlign.start,  // Align text to the start
+                                                        textAlign: TextAlign.start,
                                                       ),
                                                     );
                                                   }).toList(),
@@ -318,19 +330,6 @@ class HomeScreenState extends State<HomeScreen> {
                                               ),
                                             ],
                                           ],
-                                        ),
-                                      );
-                                    } else {
-                                      return Padding(
-                                        padding: EdgeInsets.symmetric(vertical: 16),
-                                        child: Text(
-                                          "Nothing to show", // If there's no data or it's empty, show this message
-                                          style: TextStyle(
-                                            color: HomeScreen.textColor,
-                                            fontSize: fontSize2,  // Default font size for content
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          textAlign: TextAlign.start,  // Align text to the start
                                         ),
                                       );
                                     }
