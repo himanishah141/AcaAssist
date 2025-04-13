@@ -24,6 +24,8 @@ class HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0; // Default to home page
   String name = ""; // Variable to store the user's name
   String initials = ""; // Variable to store the user's initials
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -92,6 +94,7 @@ class HomeScreenState extends State<HomeScreen> {
     double appBarHeight = getAppBarHeight(context);
     // Set font size for title
     double fontSize = getFontSize(context);
+    double fontSize2 = screenWidth * 0.04;
 
     return Scaffold(
       backgroundColor: HomeScreen.backgroundColor,
@@ -157,97 +160,193 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // SizedBox with Scrollable Tasks
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
-              child: SizedBox(
-                width: screenWidth * 0.9,
-                height: screenHeight * 0.4,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: HomeScreen.primaryColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      // Header Row for Today's Tasks
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16),
-                          ),
-                          color: HomeScreen.primaryColor,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Card(
+                elevation: 4,
+                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.02, horizontal: screenWidth * 0.04),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                color: HomeScreen.primaryColor, // Card background color
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    height: screenHeight * 0.4, // Adjust the height as needed
+                    child: Scrollbar(
+                      child: SingleChildScrollView(
+                        child: Column(
                           children: [
-                            Text(
-                              "Today's Tasks",
-                              style: TextStyle(
-                                color: HomeScreen.textColor,
-                                fontSize: screenWidth * 0.06,
-                                fontWeight: FontWeight.bold,
+                            // Today's Tasks Header Row
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: HomeScreen.primaryColor,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Today's Tasks",
+                                    style: TextStyle(
+                                      color: HomeScreen.textColor,
+                                      fontSize: screenWidth * 0.06,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  SvgPicture.asset(
+                                    "assets/todo_logo.svg",
+                                    width: screenWidth * 0.1,
+                                    height: screenWidth * 0.1,
+                                    colorFilter: ColorFilter.mode(
+                                      HomeScreen.textColor,
+                                      BlendMode.srcIn,
+                                    ),
+                                    fit: BoxFit.contain,
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(width: 8),
-                            SvgPicture.asset(
-                              "assets/todo_logo.svg",
-                              width: screenWidth * 0.1,
-                              height: screenWidth * 0.1,
-                              colorFilter: ColorFilter.mode(
-                                HomeScreen.textColor,
-                                BlendMode.srcIn,
+
+                            // Divider to separate header and tasks
+                            Divider(
+                              color: HomeScreen.textColor,
+                              thickness: 1,
+                              indent: screenWidth * 0.01,
+                              endIndent: screenWidth * 0.01,
+                            ),
+
+                            // Horizontal scroll view for content if needed
+                            Scrollbar(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal, // Horizontal scroll
+                                child: FutureBuilder<List<String>>(
+                                  future: Future.wait([
+                                    fetchTodayStudyPlanMessage(),
+                                    fetchTodayTasksMessage(),
+                                  ]),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return Center(child: CircularProgressIndicator(color: HomeScreen.textColor));
+                                    } else if (snapshot.hasError) {
+                                      return Center(child: Text("Something went wrong", style: TextStyle(color: HomeScreen.textColor)));
+                                    } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                                      // Fetching study plan and tasks
+                                      String studyPlan = snapshot.data![0].trim();
+                                      String tasks = snapshot.data![1].trim();
+
+                                      // Splitting tasks by newlines to create a list of tasks
+                                      List<String> taskList = tasks.isNotEmpty ? tasks.split('\n') : [];
+
+                                      // Splitting study plan by newlines to create a list of study plan items
+                                      List<String> studyPlanList = studyPlan.isNotEmpty ? studyPlan.split('\n') : [];
+
+                                      return Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,  // Align everything to start (left-aligned)
+                                          children: [
+                                            // Display "Today's Study Plan" if it's not empty
+                                            if (studyPlanList.isNotEmpty) ...[
+                                              Text(
+                                                "📅 Today's Study Plan:",  // Static header for "Today's Study Plan"
+                                                style: TextStyle(
+                                                  color: HomeScreen.textColor,
+                                                  fontSize: fontSize2 * 1.3, // Dynamically set font size here
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                textAlign: TextAlign.start,  // Align text to the start
+                                              ),
+                                              SizedBox(height: 8),
+                                              // Display each study plan line with bullet points
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 16),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,  // Ensure study plan is left-aligned
+                                                  children: studyPlanList.map((studyPlanItem) {
+                                                    return Padding(
+                                                      padding: const EdgeInsets.only(bottom: 8.0),
+                                                      child: Text(
+                                                        "• $studyPlanItem",  // Add the bullet point before each study plan item
+                                                        style: TextStyle(
+                                                          color: HomeScreen.textColor,
+                                                          fontSize: fontSize2 * 1.2,  // Default font size for study plan content
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                        textAlign: TextAlign.start,  // Align text to the start
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ],
+
+                                            // Now we add the "📝 Today's Tasks" heading with dynamic font size
+                                            if (taskList.isNotEmpty) ...[
+                                              Text(
+                                                "📝 Today's Tasks:",  // Static header for "Today's Tasks"
+                                                style: TextStyle(
+                                                  color: HomeScreen.textColor,
+                                                  fontSize: fontSize2 * 1.3, // Dynamically set font size here for tasks header
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                textAlign: TextAlign.start,  // Align text to the start
+                                              ),
+                                              SizedBox(height: 8),
+                                              // Display each task line with bullet points
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 16),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,  // Ensure tasks are left-aligned
+                                                  children: taskList.map((task) {
+                                                    return Padding(
+                                                      padding: const EdgeInsets.only(bottom: 8.0),
+                                                      child: Text(
+                                                        "• $task",  // Add the bullet point before each task
+                                                        style: TextStyle(
+                                                          color: HomeScreen.textColor,
+                                                          fontSize: fontSize2 * 1.2,  // Default font size for task content
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                        textAlign: TextAlign.start,  // Align text to the start
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      return Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        child: Text(
+                                          "Nothing to show", // If there's no data or it's empty, show this message
+                                          style: TextStyle(
+                                            color: HomeScreen.textColor,
+                                            fontSize: fontSize2,  // Default font size for content
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          textAlign: TextAlign.start,  // Align text to the start
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
                               ),
-                              fit: BoxFit.contain,
                             ),
                           ],
                         ),
                       ),
-
-                      // Divider to separate header and tasks
-                      Divider(
-                        color: HomeScreen.textColor,
-                        thickness: 1,
-                        indent: screenWidth * 0.02,
-                        endIndent: screenWidth * 0.02,
-                      ),
-
-                      // Scrollable Tasks List
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              // Tasks List (you can replace this with dynamic task data)
-                              for (int i = 1; i <= 10; i++)
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 8),
-                                  child: Card(
-                                    color: HomeScreen.textColor,
-                                    elevation: 4,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Text(
-                                        'Task $i',
-                                        style: TextStyle(
-                                          color: HomeScreen.backgroundColor,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
+            SizedBox(height: screenHeight * 0.02),
           ],
         ),
       ),
@@ -383,5 +482,97 @@ class HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<String> fetchTodayStudyPlanMessage() async {
+    List<String> messages = [];
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      String currentDay = _getCurrentDay();
+
+      // Fetch timetable
+      DocumentSnapshot timetableDoc = await _firestore
+          .collection('Users')
+          .doc(user.uid)
+          .collection('GeneratedTimetable')
+          .doc(currentDay)
+          .get();
+
+      if (timetableDoc.exists && timetableDoc['Subjects'] != null && timetableDoc['Subjects'].isNotEmpty) {
+        List subjects = timetableDoc['Subjects'];
+        for (var subject in subjects) {
+          int hours = subject['Hours'];
+          String hourLabel = hours == 1 ? 'hour' : 'hours';
+          String subjectName = (subject['SubjectName'] ?? '').trim();
+          messages.add("$subjectName for $hours $hourLabel.");
+        }
+      }
+    }
+
+    return messages.join('\n'); // Join messages with newline
+  }
+
+  Future<String> fetchTodayTasksMessage() async {
+    List<String> messages = [];
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      QuerySnapshot taskSnapshot = await _firestore
+          .collection('Users')
+          .doc(user.uid)
+          .collection('TaskManagement')
+          .where('Date', isEqualTo: DateTime.now().toIso8601String().substring(0, 10))
+          .get();
+
+      if (taskSnapshot.docs.isNotEmpty) {
+        for (var doc in taskSnapshot.docs) {
+          var task = doc.data() as Map<String, dynamic>;
+          String status = task['Status'];
+          String taskType = task['TaskType'];
+          String subject = (task['SubjectName'] ?? '').trim();
+
+          String taskMessage = '';
+          if (taskType == "Assignment") {
+            switch (status) {
+              case "Pending":
+                taskMessage = "You have an Assignment in $subject due today. Get it done!";
+                break;
+              case "Missing":
+                taskMessage = "Your Assignment in $subject is still pending and now marked as Missing.";
+                break;
+              case "Completed":
+                taskMessage = "Great job! Your Assignment in $subject is completed.";
+                break;
+              case "Done Late":
+                taskMessage = "Your Assignment in $subject was submitted late.";
+                break;
+            }
+          } else if (taskType == "Exam") {
+            switch (status) {
+              case "Pending":
+                taskMessage = "You have an Exam in $subject today. All the best!";
+                break;
+              case "Completed":
+                taskMessage = "Your Exam in $subject is completed.";
+                break;
+            }
+          }
+
+          if (taskMessage.isNotEmpty) {
+            messages.add(taskMessage);
+          }
+        }
+      }
+    }
+
+    return messages.join('\n'); // Join messages with newline
+  }
+
+  // Function to get the current day of the week
+  String _getCurrentDay() {
+    DateTime now = DateTime.now();
+    List<String> days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[now.weekday % 7]; // Get current day as string
   }
 }
