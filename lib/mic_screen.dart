@@ -1,4 +1,8 @@
+    import 'package:aca_assist/about_us_screen.dart';
+    import 'package:aca_assist/contact_us_screen.dart';
     import 'package:flutter/material.dart';
+    import 'academic_details_screen.dart';
+    import 'recommend_resources_screen.dart';
     import 'package:cloud_firestore/cloud_firestore.dart';
     import 'package:firebase_auth/firebase_auth.dart';
     import 'package:flutter_svg/flutter_svg.dart';
@@ -44,12 +48,6 @@
               setState(() => _isListening = false);
             }
           },
-          onError: (errorNotification) {
-            print('Speech recognition error: $errorNotification');
-            setState(() {
-              micStatusText = "Error: $errorNotification";
-            });
-          },
         );
 
         if (available) {
@@ -84,7 +82,7 @@
 
       void _handleCommands() {
         if (_recognizedText.isNotEmpty) {
-          if (_recognizedText.contains("home")) {
+          if (_recognizedText.contains("home") || _recognizedText.contains("today") || _recognizedText.contains("today's")) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -94,25 +92,45 @@
               context,
               MaterialPageRoute(builder: (context) => const TaskManagementScreen()),
             );
-          } else if (_recognizedText.contains("schedule")) {
+          } else if (_recognizedText.contains("schedule") || _recognizedText.contains("timetable")) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const StudyScheduleScreen()),
+            );
+          } else if (_recognizedText.contains("academic") || _recognizedText.contains("add subject") || _recognizedText.contains("add subjects") || _recognizedText.contains("delete subject") || _recognizedText.contains("delete subjects") || _recognizedText.contains("edit subject") || _recognizedText.contains("edit subjects")) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AcademicDetailsScreen()),
+            );
+          } else if (_recognizedText.contains("resources") || _recognizedText.contains("resource") || _recognizedText.contains("recommend")) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const RecommendResourcesScreen()),
             );
           } else if (_recognizedText.contains("analytics") || _recognizedText.contains("analysis")) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const AnalyticsScreen()),
             );
-          } else if (_recognizedText.contains("profile")) {
+          } else if (_recognizedText.contains("profile") || _recognizedText.contains("logout")) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
-          } else if (_recognizedText.contains("settings") || _recognizedText.contains("password")) {
+          } else if (_recognizedText.contains("settings") || _recognizedText.contains("password") || _recognizedText.contains("delete")) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          } else if (_recognizedText.contains("about")) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutUsScreen()),
+            );
+          } else if (_recognizedText.contains("contact")) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ContactUsScreen()),
             );
           } else {
             setState(() {

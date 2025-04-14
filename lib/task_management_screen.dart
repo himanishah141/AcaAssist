@@ -675,34 +675,28 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
                                                 rows: tasks.map((task) {
                                                   DateTime taskDate = DateTime.parse(task['Date']);
                                                   final now = DateTime.now();
+                                                  DateTime nowDateOnly = DateTime(now.year, now.month, now.day);
+                                                  DateTime dueDateLimit = taskDate;
+
                                                   String taskStatus = task['Status'];
 
-                                                  // Convert to date-only for accurate comparison
-                                                  DateTime nowDateOnly = DateTime(now.year, now.month, now.day);
-                                                  DateTime dueDateLimit = DateTime(taskDate.year, taskDate.month, taskDate.day + 1); // due date + 1 day at 00:00
-
-                                                  // Assignments: Mark as 'Missing' after the grace period
                                                   if (task['TaskType'] == 'Assignment' && taskStatus == 'Pending' && nowDateOnly.isAfter(dueDateLimit)) {
-                                                    taskStatus = 'Missing';
-                                                    _firestore
-                                                        .collection('Users')
-                                                        .doc(_auth.currentUser?.uid)
-                                                        .collection('TaskManagement')
-                                                        .doc(task['TaskId'])
-                                                        .update({'Status': 'Missing'});
+                                                  taskStatus = 'Missing';
+                                                  _firestore.collection('Users')
+                                                      .doc(_auth.currentUser?.uid)
+                                                      .collection('TaskManagement')
+                                                      .doc(task['TaskId'])
+                                                      .update({'Status': 'Missing'});
                                                   }
 
-                                                  // Exams: Mark as 'Completed' after the grace period
                                                   if (task['TaskType'] == 'Exam' && taskStatus == 'Pending' && nowDateOnly.isAfter(dueDateLimit)) {
-                                                    taskStatus = 'Completed';
-                                                    _firestore
-                                                        .collection('Users')
-                                                        .doc(_auth.currentUser?.uid)
-                                                        .collection('TaskManagement')
-                                                        .doc(task['TaskId'])
-                                                        .update({'Status': 'Completed'});
+                                                  taskStatus = 'Completed';
+                                                  _firestore.collection('Users')
+                                                      .doc(_auth.currentUser?.uid)
+                                                      .collection('TaskManagement')
+                                                      .doc(task['TaskId'])
+                                                      .update({'Status': 'Completed'});
                                                   }
-
                                                   return DataRow(cells: [
                                                     DataCell(
                                                       Align(

@@ -109,13 +109,6 @@ class SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Function to toggle notifications
-  void _toggleNotifications(bool value) {
-    setState(() {
-      isNotificationsEnabled = value;
-    });
-  }
-
   // Function to show alert before deleting the account
   void _confirmDeleteAccount() {
     showDialog(
@@ -318,33 +311,17 @@ class SettingsScreenState extends State<SettingsScreen> {
                       ListTile(
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.03,
-                          vertical: screenHeight * 0.01,
+                          vertical: screenHeight * 0.02,
                         ),
                         leading: Icon(Icons.lock, color: SettingsScreen.textColor, size: getIconSize(context) * 0.7),
                         title: Text("Set/Change Password", style: TextStyle(color: SettingsScreen.textColor, fontSize: getFontSize(context) * 0.7)),
                         onTap: _goToManagePassword, // Navigate to Change Password screen
                       ),
-                      // New: Enable/Disable Notifications
-                      ListTile(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.03,
-                          vertical: screenHeight * 0.01,
-                        ),
-                        leading: Icon(Icons.notifications, color: SettingsScreen.textColor, size: getIconSize(context) * 0.7),
-                        title: Text("Enable/Disable Notifications", style: TextStyle(color: SettingsScreen.textColor, fontSize: getFontSize(context) * 0.7)),
-                        trailing: Switch(
-                          value: isNotificationsEnabled,
-                          onChanged: _toggleNotifications, // Toggle notifications
-                          activeColor: SettingsScreen.textColor,
-                          inactiveThumbColor: Colors.white, // Set thumb color to white when disabled
-                          inactiveTrackColor: Colors.grey, // Set track color to grey when disabled
-                        ),
-                      ),
                       // New: Delete Account
                       ListTile(
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.03,
-                          vertical: screenHeight * 0.01,
+                          vertical: screenHeight * 0.02,
                         ),
                         leading: Icon(Icons.delete, color: SettingsScreen.textColor, size: getIconSize(context) * 0.7),
                         title: Text("Delete Account", style: TextStyle(color: SettingsScreen.textColor, fontSize: getFontSize(context) * 0.7)),
@@ -353,7 +330,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                       ListTile(
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.03,
-                          vertical: screenHeight * 0.01,
+                          vertical: screenHeight * 0.02,
                         ),
                         leading: Icon(Icons.info, color: SettingsScreen.textColor, size: getIconSize(context) * 0.7),
                         title: Text("About Us", style: TextStyle(color: SettingsScreen.textColor, fontSize: getFontSize(context) * 0.7)),
@@ -362,7 +339,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                       ListTile(
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.03,
-                          vertical: screenHeight * 0.01,
+                          vertical: screenHeight * 0.02,
                         ),
                         leading: Icon(Icons.contact_mail, color: SettingsScreen.textColor, size: getIconSize(context) * 0.7),
                         title: Text("Contact Us", style: TextStyle(color: SettingsScreen.textColor, fontSize: getFontSize(context) * 0.7)),
