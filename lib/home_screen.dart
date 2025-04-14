@@ -259,77 +259,80 @@ class HomeScreenState extends State<HomeScreen> {
 
                                       return Padding(
                                         padding: EdgeInsets.symmetric(vertical: 16),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            // Display "Today's Study Plan" if it's not empty
-                                            if (studyPlanList.isNotEmpty) ...[
-                                              Text(
-                                                "📅 Today's Study Plan:",  // Static header for "Today's Study Plan"
-                                                style: TextStyle(
-                                                  color: HomeScreen.textColor,
-                                                  fontSize: fontSize2 * 1.3, // Dynamically set font size
-                                                  fontWeight: FontWeight.bold,
+                                        child: SizedBox(
+                                        width: screenWidth,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              // Display "Today's Study Plan" if it's not empty
+                                              if (studyPlanList.isNotEmpty) ...[
+                                                Text(
+                                                  "📅 Today's Study Plan:",  // Static header for "Today's Study Plan"
+                                                  style: TextStyle(
+                                                    color: HomeScreen.textColor,
+                                                    fontSize: fontSize2 * 1.3, // Dynamically set font size
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  textAlign: TextAlign.start,  // Align text to the start
                                                 ),
-                                                textAlign: TextAlign.start,  // Align text to the start
-                                              ),
-                                              SizedBox(height: 8),
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(vertical: 16),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: studyPlanList.map((studyPlanItem) {
-                                                    return Padding(
-                                                      padding: const EdgeInsets.only(bottom: 8.0),
-                                                      child: Text(
-                                                        "• $studyPlanItem",  // Add the bullet point before each item
-                                                        style: TextStyle(
-                                                          color: HomeScreen.textColor,
-                                                          fontSize: fontSize2 * 1.2,  // Default font size
-                                                          fontWeight: FontWeight.w600,
+                                                SizedBox(height: 8),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: studyPlanList.map((studyPlanItem) {
+                                                      return Padding(
+                                                        padding: const EdgeInsets.only(bottom: 8.0),
+                                                        child: Text(
+                                                          "• $studyPlanItem",  // Add the bullet point before each item
+                                                          style: TextStyle(
+                                                            color: HomeScreen.textColor,
+                                                            fontSize: fontSize2 * 1.2,  // Default font size
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                          textAlign: TextAlign.start,
                                                         ),
-                                                        textAlign: TextAlign.start,
-                                                      ),
-                                                    );
-                                                  }).toList(),
+                                                      );
+                                                    }).toList(),
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
 
-                                            // Display "Today's Tasks" if it's not empty
-                                            if (taskList.isNotEmpty) ...[
-                                              Text(
-                                                "📝 Today's Tasks:",  // Static header for "Today's Tasks"
-                                                style: TextStyle(
-                                                  color: HomeScreen.textColor,
-                                                  fontSize: fontSize2 * 1.3,  // Dynamically set font size for tasks header
-                                                  fontWeight: FontWeight.bold,
+                                              // Display "Today's Tasks" if it's not empty
+                                              if (taskList.isNotEmpty) ...[
+                                                Text(
+                                                  "📝 Today's Tasks:",  // Static header for "Today's Tasks"
+                                                  style: TextStyle(
+                                                    color: HomeScreen.textColor,
+                                                    fontSize: fontSize2 * 1.3,  // Dynamically set font size for tasks header
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  textAlign: TextAlign.start,
                                                 ),
-                                                textAlign: TextAlign.start,
-                                              ),
-                                              SizedBox(height: 8),
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(vertical: 16),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: taskList.map((task) {
-                                                    return Padding(
-                                                      padding: const EdgeInsets.only(bottom: 8.0),
-                                                      child: Text(
-                                                        "• $task",  // Add the bullet point before each task
-                                                        style: TextStyle(
-                                                          color: HomeScreen.textColor,
-                                                          fontSize: fontSize2 * 1.2,  // Default font size for task content
-                                                          fontWeight: FontWeight.w600,
+                                                SizedBox(height: 8),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: taskList.map((task) {
+                                                      return Padding(
+                                                        padding: const EdgeInsets.only(bottom: 8.0),
+                                                        child: Text(
+                                                          "• $task",  // Add the bullet point before each task
+                                                          style: TextStyle(
+                                                            color: HomeScreen.textColor,
+                                                            fontSize: fontSize2 * 1.2,  // Default font size for task content
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                          textAlign: TextAlign.start,
                                                         ),
-                                                        textAlign: TextAlign.start,
-                                                      ),
-                                                    );
-                                                  }).toList(),
+                                                      );
+                                                    }).toList(),
+                                                  ),
                                                 ),
-                                              ),
+                                              ],
                                             ],
-                                          ],
+                                          ),
                                         ),
                                       );
                                     }

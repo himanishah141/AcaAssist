@@ -276,7 +276,7 @@
                     },
                     child: SvgPicture.asset(
                       "assets/mic.svg",
-                      height: screenHeight * 0.18,
+                      height: screenHeight * 0.25,
                       fit: BoxFit.contain,
                       colorFilter: ColorFilter.mode(
                         MicScreen.textColor.withAlpha((0.7 * 255).toInt()),
@@ -285,7 +285,7 @@
                     ),
                   ),
 
-                SizedBox(height: 16), // Space between image and text
+                SizedBox(height: 10), // Space between image and text
                 Text(
                   micStatusText,
                   style: TextStyle(
