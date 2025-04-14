@@ -92,7 +92,7 @@
               context,
               MaterialPageRoute(builder: (context) => const TaskManagementScreen()),
             );
-          } else if (_recognizedText.contains("schedule") || _recognizedText.contains("timetable")) {
+          } else if (_recognizedText.contains("schedule") || _recognizedText.contains("time table")) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const StudyScheduleScreen()),
