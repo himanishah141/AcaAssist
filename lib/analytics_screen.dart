@@ -96,6 +96,8 @@ class AnalyticsScreenState extends State<AnalyticsScreen> {
         int selectedMonthIndex = months.indexOf(_selectedMonth ?? '') + 1;
         if (selectedMonthIndex == 0) return; // If month not found, exit
 
+        int currentYear = DateTime.now().year;
+
         // Loop through the tasks and categorize them based on the month
         for (var doc in snapshot.docs) {
           String status = doc['Status'];
@@ -103,7 +105,7 @@ class AnalyticsScreenState extends State<AnalyticsScreen> {
           DateTime taskDate = DateTime.parse(dateString); // Convert to DateTime object
 
           // Check if the task belongs to the selected month
-          if (taskDate.month == selectedMonthIndex) {
+          if (taskDate.month == selectedMonthIndex && taskDate.year == currentYear) {
             if (status == 'Completed') {
               completedCount++;
             } else if (status == 'Pending') {
@@ -147,9 +149,9 @@ class AnalyticsScreenState extends State<AnalyticsScreen> {
     double iconSize = screenWidth * 0.10;
     return iconSize < 50 ? 50 : iconSize;
   }
-
   double getAppBarHeight(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+
     return screenHeight * 0.08;
   }
 
