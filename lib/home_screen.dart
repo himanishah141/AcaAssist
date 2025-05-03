@@ -540,14 +540,8 @@ class HomeScreenState extends State<HomeScreen> {
               case "Pending":
                 taskMessage = "You have an Assignment in $subject due today. Get it done!";
                 break;
-              case "Missing":
-                taskMessage = "Your Assignment in $subject is still pending and now marked as Missing.";
-                break;
               case "Completed":
                 taskMessage = "Great job! Your Assignment in $subject is completed.";
-                break;
-              case "Done Late":
-                taskMessage = "Your Assignment in $subject was submitted late.";
                 break;
             }
           } else if (taskType == "Exam") {
