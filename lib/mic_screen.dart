@@ -83,52 +83,52 @@
       void _handleCommands() {
         if (_recognizedText.isNotEmpty) {
           if (_recognizedText.contains("home") || _recognizedText.contains("today") || _recognizedText.contains("today's")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           } else if (_recognizedText.contains("task") || _recognizedText.contains("tasks") || _recognizedText.contains("task management")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const TaskManagementScreen()),
             );
           } else if (_recognizedText.contains("schedule") || _recognizedText.contains("time table")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const StudyScheduleScreen()),
             );
           } else if (_recognizedText.contains("academic") || _recognizedText.contains("add subject") || _recognizedText.contains("add subjects") || _recognizedText.contains("delete subject") || _recognizedText.contains("delete subjects") || _recognizedText.contains("edit subject") || _recognizedText.contains("edit subjects")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AcademicDetailsScreen()),
             );
           } else if (_recognizedText.contains("resources") || _recognizedText.contains("resource") || _recognizedText.contains("recommend")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const RecommendResourcesScreen()),
             );
           } else if (_recognizedText.contains("analytics") || _recognizedText.contains("analysis")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AnalyticsScreen()),
             );
           } else if (_recognizedText.contains("profile") || _recognizedText.contains("logout")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           } else if (_recognizedText.contains("settings") || _recognizedText.contains("password") || _recognizedText.contains("delete")) {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SettingsScreen()),
             );
-          } else if (_recognizedText.contains("about")) {
-            Navigator.pushReplacement(
+          } else if (_recognizedText.contains("about") || _recognizedText.contains("information")) {
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const AboutUsScreen()),
             );
-          } else if (_recognizedText.contains("contact")) {
-            Navigator.pushReplacement(
+          } else if (_recognizedText.contains("contact") || _recognizedText.contains("help") || _recognizedText.contains("helpline number") || _recognizedText.contains("support")) {
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ContactUsScreen()),
             );

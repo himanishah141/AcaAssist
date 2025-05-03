@@ -181,6 +181,19 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
             _showSnackBar("An exam already exists for this subject on this date.");
             return; // Don't proceed if there is already an exam for that subject on the same date
           }
+
+          QuerySnapshot allExamsOnDate = await _firestore
+              .collection('Users')
+              .doc(currentUser.uid)
+              .collection('TaskManagement')
+              .where('TaskType', isEqualTo: 'Exam')
+              .where('Date', isEqualTo: formattedDate)
+              .get();
+
+          if (allExamsOnDate.docs.length >= 2) {
+            _showSnackBar("Only two exams can be scheduled for a day.");
+            return;
+          }
         }
 
         // If no duplicates for exams, proceed to add the task
@@ -209,6 +222,7 @@ class TaskManagementScreenState extends State<TaskManagementScreen> {
           _selectedSubject = null;
           _selectedStatus = null;
           selectedDate = null;
+          selectedDueDate = null;
         });
       } else {
         _showSnackBar("User is not logged in.");
