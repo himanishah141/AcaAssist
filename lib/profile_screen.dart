@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:aca_assist/login_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const Color backgroundColor = Color(0xFF5C6B7D);
@@ -48,6 +49,12 @@ class ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      final isGoogleUser = user?.providerData.any((info) => info.providerId == 'google.com') ?? false;
+
+      if (isGoogleUser) {
+        await GoogleSignIn().signOut(); // Also sign out of Google session
+      }
       await FirebaseAuth.instance.signOut();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

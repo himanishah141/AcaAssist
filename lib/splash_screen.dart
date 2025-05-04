@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:aca_assist/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:aca_assist/home_screen.dart';  // Import HomeScreen
+import 'package:aca_assist/login_screen.dart'; // Import LoginScreen
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
   SplashScreenState createState() => SplashScreenState();
 }
@@ -12,12 +15,23 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Delay for 3 seconds and navigate to HomeScreen
+    // Delay for 6 seconds and check if the user is signed in
     Timer(Duration(seconds: 6), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // If the user is signed in, navigate to HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      } else {
+        // If the user is not signed in, navigate to LoginScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+      }
     });
   }
 
