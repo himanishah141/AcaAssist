@@ -163,7 +163,7 @@ class RegistrationScreenState extends State<RegistrationScreen> {
           });
 
           // 🔹 **Validation**
-          final nameRegExp = RegExp(r'^[a-zA-Z]+$');
+          final nameRegExp = RegExp(r'^[a-zA-Z ]+$');
 
           // First name validation
           if (_firstNameController.text.isEmpty) {
@@ -181,6 +181,15 @@ class RegistrationScreenState extends State<RegistrationScreen> {
             });
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('First name can contain only letters.'),
+              backgroundColor: RegistrationScreen.primaryColor,
+            ));
+            return;
+          }
+
+          if (_firstNameController.text.contains(' ')) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('First name cannot contain spaces.'),
               backgroundColor: RegistrationScreen.primaryColor,
             ));
             return;
@@ -206,6 +215,16 @@ class RegistrationScreenState extends State<RegistrationScreen> {
             ));
             return;
           }
+
+          if (_lastNameController.text.contains(' ')) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Last name cannot contain spaces.'),
+              backgroundColor: RegistrationScreen.primaryColor,
+            ));
+            return;
+          }
+
           if (_emailController.text.isEmpty) {
             setState(() {
               _isLoading = false; // Stop loading
@@ -227,6 +246,16 @@ class RegistrationScreenState extends State<RegistrationScreen> {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please enter your password.'), backgroundColor: RegistrationScreen.primaryColor));
             return;
           }
+
+          if (_passwordController.text.contains(' ')) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Password cannot contain spaces.'),
+              backgroundColor: RegistrationScreen.primaryColor,
+            ));
+            return;
+          }
+
           String password = _passwordController.text;
           if (password.length < 8) {
             setState(() {

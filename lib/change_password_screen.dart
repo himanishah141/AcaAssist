@@ -95,6 +95,15 @@ class ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
+    if (_newPasswordController.text.contains(' ')) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Password cannot contain spaces.'),
+        backgroundColor: ChangePasswordScreen.primaryColor,
+      ));
+      return;
+    }
+
     if (newPassword.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
