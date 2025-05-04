@@ -163,18 +163,47 @@ class RegistrationScreenState extends State<RegistrationScreen> {
           });
 
           // 🔹 **Validation**
+          final nameRegExp = RegExp(r'^[a-zA-Z]+$');
+
+          // First name validation
           if (_firstNameController.text.isEmpty) {
             setState(() {
-              _isLoading = false; // Stop loading
+              _isLoading = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please enter your first name.'), backgroundColor: RegistrationScreen.primaryColor));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Please enter your first name.'),
+              backgroundColor: RegistrationScreen.primaryColor,
+            ));
+            return;
+          } else if (!nameRegExp.hasMatch(_firstNameController.text)) {
+            setState(() {
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('First name can contain only letters.'),
+              backgroundColor: RegistrationScreen.primaryColor,
+            ));
             return;
           }
+
+          // Last name validation
           if (_lastNameController.text.isEmpty) {
             setState(() {
-              _isLoading = false; // Stop loading
+              _isLoading = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please enter your last name.'), backgroundColor: RegistrationScreen.primaryColor));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Please enter your last name.'),
+              backgroundColor: RegistrationScreen.primaryColor,
+            ));
+            return;
+          } else if (!nameRegExp.hasMatch(_lastNameController.text)) {
+            setState(() {
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Last name can contain only letters.'),
+              backgroundColor: RegistrationScreen.primaryColor,
+            ));
             return;
           }
           if (_emailController.text.isEmpty) {
