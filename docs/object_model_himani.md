@@ -1,6 +1,6 @@
 # AcaAssist – Object-Oriented Concept Mapping
 
-This document outlines the core object-oriented concepts that form the foundation of the AcaAssist academic productivity app. Each object is listed along with its operational context and the key data (information) it holds.
+This document outlines the core object-oriented concepts that form the foundation of the AcaAssist academic assistant app. Each object is listed along with its operational context and the key data (information) it holds.
 
 ---
 
